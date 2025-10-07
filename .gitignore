@@ -64,6 +64,8 @@ server/yarn-error.log*
 .env.local
 .env.*.local
 api_config.dart
+lib/config/api_config.dart
+server/SUMMARY.md
 
 # Database files
 *.db
