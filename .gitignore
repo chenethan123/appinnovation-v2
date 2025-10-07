@@ -43,3 +43,99 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Web related
+/web/*.js
+/web/*.js.map
+
+# Node.js / Server
+server/node_modules/
+server/dist/
+server/build/
+server/.env
+server/.env.local
+server/.env.*.local
+server/npm-debug.log*
+server/yarn-debug.log*
+server/yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+api_config.dart
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Xcode
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Windsurf / Cascade
+.windsurf/
+.cascade/
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.gr.dart
+
+# Pods
+Pods/
+Podfile.lock
+.symlinks/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Documentation builds
+docs/_build/
+site/
