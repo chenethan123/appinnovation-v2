@@ -29,6 +29,8 @@ class OpenAIServiceNovel {
     required int subjectId,
     int choices = 4,
     int maxRetries = 3,
+    String? difficulty,  // 'easy', 'medium', 'hard', or null for mixed
+    String? unitContext,  // Current unit/topic being studied
   }) async {
     if (!_initialized) {
       throw Exception('OpenAI not initialized');
@@ -45,8 +47,8 @@ class OpenAIServiceNovel {
         print('🤖 Generating novel MCQ for: $subject (attempt $attempt/$maxRetries)');
         
         // Build novelty contract prompt
-        final systemPrompt = _buildNoveltyPrompt(choices, recentStems, recentTopics, subject);
-        final userPrompt = _buildUserPrompt(subject, choices, recentTopics, attempt);
+        final systemPrompt = _buildNoveltyPrompt(choices, recentStems, recentTopics, subject, difficulty, unitContext);
+        final userPrompt = _buildUserPrompt(subject, choices, recentTopics, attempt, difficulty, unitContext);
         
         // Call OpenAI with novelty parameters
         final chat = await OpenAI.instance.chat.create(
@@ -117,7 +119,7 @@ class OpenAIServiceNovel {
     return null;
   }
   
-  String _buildNoveltyPrompt(int choices, List<String> recentStems, List<String> recentTopics, String subject) {
+  String _buildNoveltyPrompt(int choices, List<String> recentStems, List<String> recentTopics, String subject, String? difficulty, String? unitContext) {
     final stemsSection = recentStems.isNotEmpty
         ? '\n\nRECENT QUESTION STEMS (DO NOT REPEAT):\n${recentStems.take(10).map((s) => '- $s').join('\n')}'
         : '';
@@ -126,10 +128,14 @@ class OpenAIServiceNovel {
         ? '\n\nRECENT TOPICS COVERED (CHOOSE DIFFERENT CONCEPTS):\n${recentTopics.take(10).map((t) => '- $t').join('\n')}'
         : '';
     
+    final unitFocusSection = unitContext != null
+        ? '\n🎯 UNIT FOCUS: The student is currently studying "$unitContext". Generate questions specifically related to this unit/topic within $subject.\n'
+        : '';
+    
     return '''You are an expert educational content creator specializing in **$subject**.
 
 🎯 CRITICAL REQUIREMENT - SUBJECT VERIFICATION:
-You MUST generate a question that is DIRECTLY RELEVANT to "$subject" and ONLY "$subject".
+You MUST generate a question that is DIRECTLY RELEVANT to "$subject" and ONLY "$subject".$unitFocusSection
 - If the subject is "Introduction to Philosophy", generate questions about philosophical concepts, theories, and thinkers.
 - If the subject is "Calculus", generate questions about derivatives, integrals, and limits.
 - If the subject is "AP Computer Science A", generate questions about Java programming and CS concepts.
@@ -162,20 +168,29 @@ OUTPUT FORMAT (JSON only, no markdown):
     "C": "Explanation for C",
     "D": "Explanation for D"
   },
-  "difficulty": "easy|medium|hard",
+  "difficulty": "${difficulty ?? 'medium'}",
   "source_hint": "Specific topic/concept name"
 }''';
   }
   
-  String _buildUserPrompt(String subject, int choices, List<String> recentTopics, int attempt) {
+  String _buildUserPrompt(String subject, int choices, List<String> recentTopics, int attempt, String? difficulty, String? unitContext) {
     final perturbation = attempt > 1
         ? '\n\nIMPORTANT: Previous attempts were too similar. Generate a question on a COMPLETELY DIFFERENT concept than: ${recentTopics.take(3).join(', ')}'
         : '';
     
-    return '''Generate a $difficulty MCQ **specifically about "$subject"** with exactly $choices options (A-${String.fromCharCode(64 + choices)}).
+    final difficultyText = difficulty != null && difficulty != 'all' ? difficulty : 'varied difficulty';
+    final difficultyGuidance = difficulty != null && difficulty != 'all'
+        ? '\n- Difficulty Level: ${difficulty.toUpperCase()} - ${_getDifficultyGuidance(difficulty)}'
+        : '';
+    
+    final unitFocus = unitContext != null
+        ? '\n\n🎯 UNIT FOCUS: Generate questions specifically about "$unitContext" within $subject.\n- Focus on concepts, terminology, and problems from this unit\n- Stay within the scope of $unitContext'
+        : '';
+    
+    return '''Generate a $difficultyText MCQ **specifically about "$subject"** with exactly $choices options (A-${String.fromCharCode(64 + choices)}).$unitFocus
 
 🎯 SUBJECT VERIFICATION:
-- The question MUST be directly relevant to "$subject"
+- The question MUST be directly relevant to "$subject"${unitContext != null ? ' and specifically about "$unitContext"' : ''}
 - All options MUST relate to "$subject" content
 - DO NOT generate questions from other subjects
 - Verify your question is actually about "$subject" before responding
@@ -183,12 +198,25 @@ OUTPUT FORMAT (JSON only, no markdown):
 Requirements:
 - Choose a NOVEL topic not in the recent list above
 - Stay strictly within the "$subject" domain
-- Make it educational, accurate, and unambiguous
+- Make it educational, accurate, and unambiguous$difficultyGuidance
 - Include detailed explanations for EACH option
 - Explain why wrong answers are incorrect
 - Use proper formatting for math/science notation if needed$perturbation
 
 Generate ONLY valid JSON, no other text.''';
+  }
+  
+  String _getDifficultyGuidance(String difficulty) {
+    switch (difficulty) {
+      case 'easy':
+        return 'Test basic definitions, fundamental concepts, or simple recall. Suitable for beginners.';
+      case 'medium':
+        return 'Test understanding and application of concepts. Requires some analysis.';
+      case 'hard':
+        return 'Test advanced understanding, synthesis, or complex problem-solving. Requires deep knowledge.';
+      default:
+        return '';
+    }
   }
   
   String _cleanJsonResponse(String response) {

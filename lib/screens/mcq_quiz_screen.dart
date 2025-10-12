@@ -19,14 +19,34 @@ class _MCQQuizScreenState extends ConsumerState<MCQQuizScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI-Powered Quiz'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              quizState.currentSubject != null 
+                ? quizState.currentSubject! 
+                : 'AI-Powered Quiz',
+              style: const TextStyle(fontSize: 18),
+            ),
+            if (quizState.totalQuestions > 0)
+              Text(
+                'Question ${quizState.currentQuestionNumber} of ${quizState.totalQuestions}',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              ),
+          ],
+        ),
         actions: [
           if (mcq != null && !quizState.isAnswered)
             IconButton(
               icon: const Icon(Icons.refresh),
-              tooltip: 'New Question',
+              tooltip: 'New Questions',
               onPressed: () {
-                ref.read(mcqQuizProvider.notifier).generateRandomMCQ();
+                // Generate new questions for the current subject
+                if (quizState.currentSubject != null) {
+                  ref.read(mcqQuizProvider.notifier).generateMCQ(quizState.currentSubject!);
+                } else {
+                  ref.read(mcqQuizProvider.notifier).generateRandomMCQ();
+                }
                 setState(() => _selectedAnswer = null);
               },
             ),
@@ -123,24 +143,23 @@ class _MCQQuizScreenState extends ConsumerState<MCQQuizScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Subject and difficulty
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Chip(
                 label: Text(mcq.subject),
                 avatar: const Icon(Icons.subject, size: 16),
               ),
-              const SizedBox(width: 8),
               Chip(
                 label: Text(mcq.difficulty.toUpperCase()),
                 backgroundColor: _getDifficultyColor(mcq.difficulty),
               ),
-              if (mcq.sourceHint != null) ...[
-                const SizedBox(width: 8),
+              if (mcq.sourceHint != null)
                 Chip(
                   label: Text(mcq.sourceHint!),
                   avatar: const Icon(Icons.tag, size: 16),
                 ),
-              ],
             ],
           ),
           const SizedBox(height: 24),
@@ -256,17 +275,36 @@ class _MCQQuizScreenState extends ConsumerState<MCQQuizScreen> {
 
           const SizedBox(height: 16),
 
-          // Next question button
+          // Next question button - smart navigation
           if (quizState.isAnswered)
-            OutlinedButton.icon(
+            FilledButton.icon(
               onPressed: () {
-                ref.read(mcqQuizProvider.notifier).generateRandomMCQ();
+                final hasMore = quizState.hasMoreQuestions;
+                
+                if (hasMore) {
+                  // Move to next question in queue
+                  ref.read(mcqQuizProvider.notifier).moveToNextQuestion();
+                } else {
+                  // Generate new questions for the same subject
+                  if (quizState.currentSubject != null) {
+                    ref.read(mcqQuizProvider.notifier).generateMCQ(quizState.currentSubject!);
+                  } else {
+                    ref.read(mcqQuizProvider.notifier).generateRandomMCQ();
+                  }
+                }
                 setState(() => _selectedAnswer = null);
               },
-              icon: const Icon(Icons.arrow_forward),
-              label: const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Next Question', style: TextStyle(fontSize: 16)),
+              icon: Icon(
+                quizState.hasMoreQuestions ? Icons.arrow_forward : Icons.refresh,
+              ),
+              label: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  quizState.hasMoreQuestions 
+                    ? 'Next Question' 
+                    : 'Generate More Questions',
+                  style: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
         ],

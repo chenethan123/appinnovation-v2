@@ -11,6 +11,7 @@ class AIService {
   Future<MCQ?> generateMCQ({
     required String subject,
     int choices = 4,
+    String? difficulty,  // 'easy', 'medium', 'hard', or null for mixed
   }) async {
     try {
       print('Calling API: ${ApiConfig.generateMcqEndpoint}');
@@ -23,6 +24,7 @@ class AIService {
         body: jsonEncode({
           'subject': subject,
           'choices': choices,
+          if (difficulty != null && difficulty != 'all') 'difficulty': difficulty,
         }),
       ).timeout(ApiConfig.timeout);
 
@@ -45,6 +47,7 @@ class AIService {
     required String subject,
     int choices = 4,
     int count = 5,
+    String? difficulty,  // 'easy', 'medium', 'hard', or null for mixed
   }) async {
     try {
       final response = await http.post(
@@ -56,6 +59,7 @@ class AIService {
           'subject': subject,
           'choices': choices,
           'count': count,
+          if (difficulty != null && difficulty != 'all') 'difficulty': difficulty,
         }),
       ).timeout(ApiConfig.timeout);
 

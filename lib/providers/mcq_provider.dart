@@ -14,6 +14,9 @@ import 'subject_provider.dart';
 /// State for the MCQ quiz session
 class MCQQuizState {
   final MCQ? currentMCQ;
+  final List<MCQ> questionQueue; // Queue of generated questions
+  final int currentQuestionIndex; // Index in the queue
+  final String? currentSubject; // Track which subject we're quizzing on
   final String? userAnswer;
   final bool isAnswered;
   final bool isLoading;
@@ -23,6 +26,9 @@ class MCQQuizState {
 
   MCQQuizState({
     this.currentMCQ,
+    this.questionQueue = const [],
+    this.currentQuestionIndex = 0,
+    this.currentSubject,
     this.userAnswer,
     this.isAnswered = false,
     this.isLoading = false,
@@ -33,6 +39,9 @@ class MCQQuizState {
 
   MCQQuizState copyWith({
     MCQ? currentMCQ,
+    List<MCQ>? questionQueue,
+    int? currentQuestionIndex,
+    String? currentSubject,
     String? userAnswer,
     bool? isAnswered,
     bool? isLoading,
@@ -40,10 +49,14 @@ class MCQQuizState {
     bool? timerActive,
     DateTime? nextQuizTime,
     bool clearMCQ = false,
+    bool clearQueue = false,
     bool clearError = false,
   }) {
     return MCQQuizState(
       currentMCQ: clearMCQ ? null : (currentMCQ ?? this.currentMCQ),
+      questionQueue: clearQueue ? [] : (questionQueue ?? this.questionQueue),
+      currentQuestionIndex: currentQuestionIndex ?? this.currentQuestionIndex,
+      currentSubject: currentSubject ?? this.currentSubject,
       userAnswer: userAnswer ?? this.userAnswer,
       isAnswered: isAnswered ?? this.isAnswered,
       isLoading: isLoading ?? this.isLoading,
@@ -52,6 +65,15 @@ class MCQQuizState {
       nextQuizTime: nextQuizTime ?? this.nextQuizTime,
     );
   }
+  
+  /// Check if there are more questions in the queue
+  bool get hasMoreQuestions => currentQuestionIndex < questionQueue.length - 1;
+  
+  /// Get total questions in current session
+  int get totalQuestions => questionQueue.length;
+  
+  /// Get current question number (1-indexed)
+  int get currentQuestionNumber => questionQueue.isEmpty ? 0 : currentQuestionIndex + 1;
 }
 
 /// Provider for MCQ quiz management
@@ -75,10 +97,19 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
     }
   }
 
-  /// Generate MCQ for a specific subject with novelty enforcement
-  Future<void> generateMCQ(String subject) async {
-    state = state.copyWith(isLoading: true, clearError: true, clearMCQ: true);
+  /// Generate multiple MCQs for a specific subject (generates 3-5 questions at once)
+  Future<void> generateMCQ(String subject, {String? difficulty, int questionCount = 3}) async {
+    state = state.copyWith(
+      isLoading: true, 
+      clearError: true, 
+      clearMCQ: true, 
+      clearQueue: true,
+      currentQuestionIndex: 0,
+      currentSubject: subject,
+    );
     _currentSubjectName = subject; // Track for completion logging
+
+    print('🎯 Generating $questionCount questions for: $subject');
 
     try {
       // Get subject from database to retrieve ID for deduplication
@@ -97,7 +128,8 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
       
       _currentSubjectId = subjectId; // Track for logging
       
-      MCQ? mcq;
+      // Generate multiple questions
+      List<MCQ> generatedQuestions = [];
       
       // Use direct OpenAI integration if enabled
       if (ApiConfig.useDirectOpenAI) {
@@ -114,15 +146,41 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
           return;
         }
         
-        print('🎉 Using novel OpenAI service with deduplication...');
-        mcq = await _novelService.generateMCQ(
-          subject: subject,
-          subjectId: subjectId,
-          choices: 4,
-        );
+        // Get current unit for subject context
+        final currentUnit = await _db.getCurrentUnit(subjectId);
+        final unitContext = currentUnit?.name;
+        if (unitContext != null) {
+          print('📚 Using unit context: $unitContext');
+        }
+        
+        print('🎉 Generating $questionCount questions with novelty enforcement...');
+        
+        // Generate multiple questions in sequence
+        for (int i = 0; i < questionCount; i++) {
+          if (!mounted) break;
+          
+          print('📝 Generating question ${i + 1}/$questionCount for $subject');
+          
+          final mcq = await _novelService.generateMCQ(
+            subject: subject,
+            subjectId: subjectId,
+            choices: 4,
+            difficulty: difficulty,
+            unitContext: unitContext,
+          );
+          
+          if (mcq != null) {
+            generatedQuestions.add(mcq);
+            print('✅ Question ${i + 1}/$questionCount generated successfully');
+          } else {
+            print('⚠️ Question ${i + 1}/$questionCount failed to generate');
+            // Continue with what we have
+            break;
+          }
+        }
         
       } else {
-        // Use backend server
+        // Use backend server - generate multiple questions
         print('📡 Using backend server...');
         final isHealthy = await _aiService.checkHealth();
         
@@ -140,14 +198,38 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
           return;
         }
         
-        mcq = await _aiService.generateMCQ(subject: subject, choices: 4);
+        print('🎉 Generating $questionCount questions via backend...');
+        
+        // Generate multiple questions
+        for (int i = 0; i < questionCount; i++) {
+          if (!mounted) break;
+          
+          print('📝 Generating question ${i + 1}/$questionCount for $subject');
+          
+          final mcq = await _aiService.generateMCQ(
+            subject: subject, 
+            choices: 4, 
+            difficulty: difficulty,
+          );
+          
+          if (mcq != null) {
+            generatedQuestions.add(mcq);
+            print('✅ Question ${i + 1}/$questionCount generated successfully');
+          } else {
+            print('⚠️ Question ${i + 1}/$questionCount failed');
+            break;
+          }
+        }
       }
 
       if (!mounted) return;
 
-      if (mcq != null) {
+      if (generatedQuestions.isNotEmpty) {
+        print('🎉 Successfully generated ${generatedQuestions.length} questions for $subject');
         state = state.copyWith(
-          currentMCQ: mcq,
+          questionQueue: generatedQuestions,
+          currentMCQ: generatedQuestions.first,
+          currentQuestionIndex: 0,
           isLoading: false,
           isAnswered: false,
           userAnswer: null,
@@ -156,7 +238,7 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: 'Failed to generate question.\n\n'
+          error: 'Failed to generate questions.\n\n'
                  'This may be due to:\n'
                  '• OpenAI API rate limits\n'
                  '• Network issues\n'
@@ -242,7 +324,7 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
   }
 
   /// Generate MCQ for a random subject from active subjects
-  Future<void> generateRandomMCQ() async {
+  Future<void> generateRandomMCQ({String? difficulty}) async {
     final subjects = _ref.read(activeSubjectsProvider);
 
     if (subjects.isEmpty) {
@@ -252,7 +334,7 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
 
     // Pick random subject
     final randomSubject = subjects[_random.nextInt(subjects.length)];
-    await generateMCQ(randomSubject.name);
+    await generateMCQ(randomSubject.name, difficulty: difficulty);
   }
 
   /// Submit user's answer and log completion
@@ -386,6 +468,27 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
     }
   }
 
+  /// Move to the next question in the queue
+  bool moveToNextQuestion() {
+    if (!state.hasMoreQuestions) {
+      print('📭 No more questions in queue');
+      return false;
+    }
+    
+    final nextIndex = state.currentQuestionIndex + 1;
+    final nextQuestion = state.questionQueue[nextIndex];
+    
+    state = state.copyWith(
+      currentQuestionIndex: nextIndex,
+      currentMCQ: nextQuestion,
+      isAnswered: false,
+      userAnswer: null,
+    );
+    
+    print('➡️ Moved to question ${state.currentQuestionNumber}/${state.totalQuestions}');
+    return true;
+  }
+  
   /// Reset the current quiz
   void resetQuiz() {
     state = MCQQuizState(timerActive: state.timerActive, nextQuizTime: state.nextQuizTime);

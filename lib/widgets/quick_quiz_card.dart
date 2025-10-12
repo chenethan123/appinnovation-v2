@@ -5,6 +5,7 @@ import '../providers/quiz_provider.dart';
 import '../providers/mcq_provider.dart';
 import '../screens/quiz_screen.dart';
 import '../screens/mcq_quiz_screen.dart';
+import './difficulty_selector_dialog.dart';
 
 class QuickQuizCard extends ConsumerWidget {
   const QuickQuizCard({super.key});
@@ -100,13 +101,17 @@ class QuickQuizCard extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.tonalIcon(
-                      onPressed: () {
-                        ref.read(mcqQuizProvider.notifier).generateRandomMCQ();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const MCQQuizScreen(),
-                          ),
-                        );
+                      onPressed: () async {
+                        // Show difficulty selector
+                        final difficulty = await showDifficultySelector(context);
+                        if (difficulty != null && context.mounted) {
+                          ref.read(mcqQuizProvider.notifier).generateRandomMCQ(difficulty: difficulty);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const MCQQuizScreen(),
+                            ),
+                          );
+                        }
                       },
                       icon: const Icon(Icons.auto_awesome),
                       label: const Text('AI Quiz (ChatGPT)'),

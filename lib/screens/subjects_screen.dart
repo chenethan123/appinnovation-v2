@@ -4,6 +4,7 @@ import '../providers/subject_provider.dart';
 import '../models/subject.dart';
 import '../widgets/subject_card.dart';
 import 'subject_search_screen.dart';
+import 'units_management_screen.dart';
 
 class SubjectsScreen extends ConsumerStatefulWidget {
   const SubjectsScreen({super.key});
@@ -58,6 +59,13 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> {
                     subject: subject,
                     onEdit: () => _showEditSubjectDialog(context, subject),
                     onDelete: () => _showDeleteConfirmation(context, subject),
+                    onManageUnits: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => UnitsManagementScreen(subject: subject),
+                        ),
+                      );
+                    },
                   ),
                 );
               },

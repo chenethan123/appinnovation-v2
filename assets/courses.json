@@ -1,199 +1,199 @@
 {
   "courses": [
     {
-      "courseId": "AP",
+      "courseId": "AP-CALC-AB",
       "subjectName": "AP Calculus AB",
       "category": "STEM",
       "description": "Advanced Placement Calculus - derivatives and integrals"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-CALC-BC",
       "subjectName": "AP Calculus BC",
       "category": "STEM",
       "description": "Advanced Placement Calculus - includes series and parametric equations"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-STAT",
       "subjectName": "AP Statistics",
       "category": "STEM",
       "description": "Advanced Placement Statistics - data analysis and inference"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-CS-A",
       "subjectName": "AP Computer Science A",
       "category": "STEM",
       "description": "Advanced Placement Computer Science - Java programming"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-CS-P",
       "subjectName": "AP Computer Science Principles",
       "category": "STEM",
       "description": "Advanced Placement CS Principles - computational thinking"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-PHYS-1",
       "subjectName": "AP Physics 1",
       "category": "STEM",
       "description": "Advanced Placement Physics - mechanics"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-PHYS-2",
       "subjectName": "AP Physics 2",
       "category": "STEM",
       "description": "Advanced Placement Physics - electricity, magnetism, fluids"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-PHYS-C-MECH",
       "subjectName": "AP Physics C: Mechanics",
       "category": "STEM",
       "description": "Advanced Placement Physics - calculus-based mechanics"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-PHYS-C-EM",
       "subjectName": "AP Physics C: Electricity and Magnetism",
       "category": "STEM",
       "description": "Advanced Placement Physics - calculus-based E&M"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-CHEM",
       "subjectName": "AP Chemistry",
       "category": "STEM",
       "description": "Advanced Placement Chemistry - atomic structure, bonding, reactions"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-BIO",
       "subjectName": "AP Biology",
       "category": "STEM",
       "description": "Advanced Placement Biology - cells, genetics, evolution, ecology"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-ENVIRO",
       "subjectName": "AP Environmental Science",
       "category": "STEM",
       "description": "Advanced Placement Environmental Science - ecosystems and sustainability"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-ENG-LANG",
       "subjectName": "AP English Language and Composition",
       "category": "Humanities",
       "description": "Advanced Placement English - rhetoric and composition"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-ENG-LIT",
       "subjectName": "AP English Literature and Composition",
       "category": "Humanities",
       "description": "Advanced Placement English - literary analysis"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-USHIST",
       "subjectName": "AP United States History",
       "category": "Humanities",
       "description": "Advanced Placement US History - colonial period to present"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-WHIST",
       "subjectName": "AP World History: Modern",
       "category": "Humanities",
       "description": "Advanced Placement World History - 1200 CE to present"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-EUROHIST",
       "subjectName": "AP European History",
       "category": "Humanities",
       "description": "Advanced Placement European History - Renaissance to present"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-ARTHIST",
       "subjectName": "AP Art History",
       "category": "Humanities",
       "description": "Advanced Placement Art History - global art traditions"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-MUSIC",
       "subjectName": "AP Music Theory",
       "category": "Humanities",
       "description": "Advanced Placement Music Theory - composition and analysis"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-PSYCH",
       "subjectName": "AP Psychology",
       "category": "Social Science",
       "description": "Advanced Placement Psychology - behavior and mental processes"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-MICRO",
       "subjectName": "AP Microeconomics",
       "category": "Social Science",
       "description": "Advanced Placement Microeconomics - supply, demand, markets"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-MACRO",
       "subjectName": "AP Macroeconomics",
       "category": "Social Science",
       "description": "Advanced Placement Macroeconomics - national economy and policy"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-USGOV",
       "subjectName": "AP United States Government and Politics",
       "category": "Social Science",
       "description": "Advanced Placement US Government - political institutions"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-COMPGOV",
       "subjectName": "AP Comparative Government and Politics",
       "category": "Social Science",
       "description": "Advanced Placement Comparative Government - global political systems"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-HUMGEO",
       "subjectName": "AP Human Geography",
       "category": "Social Science",
       "description": "Advanced Placement Human Geography - spatial patterns and processes"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-SPAN-LANG",
       "subjectName": "AP Spanish Language and Culture",
       "category": "Languages",
       "description": "Advanced Placement Spanish - language proficiency and cultural understanding"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-SPAN-LIT",
       "subjectName": "AP Spanish Literature and Culture",
       "category": "Languages",
       "description": "Advanced Placement Spanish Literature - literary analysis in Spanish"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-FREN",
       "subjectName": "AP French Language and Culture",
       "category": "Languages",
       "description": "Advanced Placement French - language proficiency and cultural understanding"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-GERM",
       "subjectName": "AP German Language and Culture",
       "category": "Languages",
       "description": "Advanced Placement German - language proficiency and cultural understanding"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-CHIN",
       "subjectName": "AP Chinese Language and Culture",
       "category": "Languages",
       "description": "Advanced Placement Chinese - Mandarin proficiency and cultural understanding"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-ITAL",
       "subjectName": "AP Italian Language and Culture",
       "category": "Languages",
       "description": "Advanced Placement Italian - language proficiency and cultural understanding"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-JAPN",
       "subjectName": "AP Japanese Language and Culture",
       "category": "Languages",
       "description": "Advanced Placement Japanese - language proficiency and cultural understanding"
     },
     {
-      "courseId": "AP",
+      "courseId": "AP-LATIN",
       "subjectName": "AP Latin",
       "category": "Languages",
       "description": "Advanced Placement Latin - classical Latin language and Roman culture"
@@ -605,6 +605,162 @@
       "subjectName": "Corporate Finance",
       "category": "Business",
       "description": "Financial management and investment decisions"
+    },
+    {
+      "courseId": "ENG 210",
+      "subjectName": "Creative Writing",
+      "category": "Humanities",
+      "description": "Fiction, poetry, and creative nonfiction writing"
+    },
+    {
+      "courseId": "PHYS 220",
+      "subjectName": "Thermodynamics",
+      "category": "STEM",
+      "description": "Heat, energy, and entropy in physical systems"
+    },
+    {
+      "courseId": "CHEM 210",
+      "subjectName": "Analytical Chemistry",
+      "category": "STEM",
+      "description": "Quantitative analysis and laboratory techniques"
+    },
+    {
+      "courseId": "BIO 220",
+      "subjectName": "Biochemistry",
+      "category": "STEM",
+      "description": "Chemical processes within living organisms"
+    },
+    {
+      "courseId": "MATH 330",
+      "subjectName": "Abstract Algebra",
+      "category": "STEM",
+      "description": "Groups, rings, and fields"
+    },
+    {
+      "courseId": "MATH 340",
+      "subjectName": "Real Analysis",
+      "category": "STEM",
+      "description": "Rigorous foundations of calculus"
+    },
+    {
+      "courseId": "CS 320",
+      "subjectName": "Computer Networks",
+      "category": "STEM",
+      "description": "Network protocols, TCP/IP, and internet architecture"
+    },
+    {
+      "courseId": "CS 330",
+      "subjectName": "Machine Learning",
+      "category": "STEM",
+      "description": "Supervised and unsupervised learning algorithms"
+    },
+    {
+      "courseId": "CS 360",
+      "subjectName": "Computer Graphics",
+      "category": "STEM",
+      "description": "3D rendering, animation, and visual computing"
+    },
+    {
+      "courseId": "ECON 210",
+      "subjectName": "Econometrics",
+      "category": "Social Science",
+      "description": "Statistical methods in economics"
+    },
+    {
+      "courseId": "PSYC 230",
+      "subjectName": "Cognitive Psychology",
+      "category": "Social Science",
+      "description": "Mental processes, memory, and perception"
+    },
+    {
+      "courseId": "PSYC 240",
+      "subjectName": "Behavioral Neuroscience",
+      "category": "Social Science",
+      "description": "Brain basis of behavior and cognition"
+    },
+    {
+      "courseId": "HIST 210",
+      "subjectName": "European History",
+      "category": "Humanities",
+      "description": "Major events in European civilization"
+    },
+    {
+      "courseId": "HIST 220",
+      "subjectName": "Asian History",
+      "category": "Humanities",
+      "description": "History of East and South Asia"
+    },
+    {
+      "courseId": "PHIL 220",
+      "subjectName": "Political Philosophy",
+      "category": "Humanities",
+      "description": "Justice, rights, and political theory"
+    },
+    {
+      "courseId": "PHIL 230",
+      "subjectName": "Philosophy of Mind",
+      "category": "Humanities",
+      "description": "Consciousness, perception, and mental states"
+    },
+    {
+      "courseId": "SPAN 201",
+      "subjectName": "Intermediate Spanish I",
+      "category": "Languages",
+      "description": "Advanced Spanish grammar and conversation"
+    },
+    {
+      "courseId": "SPAN 202",
+      "subjectName": "Intermediate Spanish II",
+      "category": "Languages",
+      "description": "Spanish literature and composition"
+    },
+    {
+      "courseId": "FREN 102",
+      "subjectName": "Elementary French II",
+      "category": "Languages",
+      "description": "Continuation of basic French"
+    },
+    {
+      "courseId": "JAPN 101",
+      "subjectName": "Elementary Japanese I",
+      "category": "Languages",
+      "description": "Basic Japanese language and writing systems"
+    },
+    {
+      "courseId": "BUS 201",
+      "subjectName": "Business Law",
+      "category": "Business",
+      "description": "Legal principles in business transactions"
+    },
+    {
+      "courseId": "BUS 210",
+      "subjectName": "Entrepreneurship",
+      "category": "Business",
+      "description": "Starting and managing new ventures"
+    },
+    {
+      "courseId": "ACCT 201",
+      "subjectName": "Managerial Accounting",
+      "category": "Business",
+      "description": "Cost analysis and management decisions"
+    },
+    {
+      "courseId": "ENGR 101",
+      "subjectName": "Introduction to Engineering",
+      "category": "STEM",
+      "description": "Engineering design and problem solving"
+    },
+    {
+      "courseId": "ENGR 201",
+      "subjectName": "Electrical Engineering",
+      "category": "STEM",
+      "description": "Circuit analysis and electrical systems"
+    },
+    {
+      "courseId": "ENGR 210",
+      "subjectName": "Mechanical Engineering",
+      "category": "STEM",
+      "description": "Mechanics, thermodynamics, and design"
     }
   ]
 }

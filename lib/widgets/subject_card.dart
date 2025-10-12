@@ -6,6 +6,7 @@ class SubjectCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onManageUnits;
 
   const SubjectCard({
     super.key,
@@ -13,6 +14,7 @@ class SubjectCard extends StatelessWidget {
     this.onTap,
     this.onEdit,
     this.onDelete,
+    this.onManageUnits,
   });
 
   @override
@@ -67,12 +69,15 @@ class SubjectCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (onEdit != null || onDelete != null)
+                    if (onEdit != null || onDelete != null || onManageUnits != null)
                       PopupMenuButton<String>(
                         onSelected: (value) {
                           switch (value) {
                             case 'edit':
                               onEdit?.call();
+                              break;
+                            case 'manage_units':
+                              onManageUnits?.call();
                               break;
                             case 'delete':
                               onDelete?.call();
@@ -88,6 +93,17 @@ class SubjectCard extends StatelessWidget {
                                   Icon(Icons.edit_outlined),
                                   SizedBox(width: 8),
                                   Text('Edit'),
+                                ],
+                              ),
+                            ),
+                          if (onManageUnits != null)
+                            const PopupMenuItem(
+                              value: 'manage_units',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.library_books),
+                                  SizedBox(width: 8),
+                                  Text('Manage Units'),
                                 ],
                               ),
                             ),

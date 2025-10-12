@@ -7,6 +7,7 @@ import '../widgets/subject_card.dart';
 import '../widgets/quick_quiz_card.dart';
 import '../widgets/timer_quiz_card.dart';
 import '../widgets/stats_overview_card.dart';
+import '../widgets/test_notification_card.dart';
 import 'subjects_screen.dart';
 import 'quiz_screen.dart';
 import 'mcq_quiz_screen.dart';
@@ -303,10 +304,13 @@ class _HomeTab extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Welcome back!',
-                            style: Theme.of(context).textTheme.headlineSmall,
+                          Flexible(
+                            child: Text(
+                              'Welcome back!',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           FilledButton.icon(
                             onPressed: () {
                               final homeState = context.findAncestorStateOfType<_HomeScreenState>();
@@ -314,8 +318,11 @@ class _HomeTab extends ConsumerWidget {
                                 homeState._selectedIndex = 2; // Navigate to Subjects tab
                               });
                             },
-                            icon: const Icon(Icons.settings),
-                            label: const Text('Manage Subjects'),
+                            icon: const Icon(Icons.settings, size: 18),
+                            label: const Text('Subjects', style: TextStyle(fontSize: 13)),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            ),
                           ),
                         ],
                       ),
@@ -344,6 +351,10 @@ class _HomeTab extends ConsumerWidget {
 
               // Quick Quiz section
               const QuickQuizCard(),
+              const SizedBox(height: 24),
+
+              // Test Notifications
+              const TestNotificationCard(),
               const SizedBox(height: 24),
 
               // Timer Quiz section

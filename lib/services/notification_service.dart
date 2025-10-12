@@ -201,4 +201,44 @@ class NotificationService {
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
     return await _notifications.pendingNotificationRequests();
   }
+
+  /// Schedule a test notification in X minutes
+  Future<void> scheduleTestNotification(int minutes) async {
+    final scheduledTime = DateTime.now().add(Duration(minutes: minutes));
+    final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    
+    const androidDetails = AndroidNotificationDetails(
+      'test_channel',
+      'Test Notifications',
+      channelDescription: 'Test notifications for debugging',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+      macOS: iosDetails,
+    );
+
+    await _notifications.zonedSchedule(
+      id,
+      '📚 Time to take your quiz!',
+      'Your study session is ready. Open the app to start your quiz now!',
+      tz.TZDateTime.from(scheduledTime, tz.local),
+      notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'test_notification',
+    );
+    
+    print('✅ Test notification scheduled for ${scheduledTime.toString().substring(0, 19)}');
+  }
 }

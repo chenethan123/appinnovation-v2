@@ -5,13 +5,14 @@ import '../models/subject.dart';
 import '../models/question.dart';
 import '../models/quiz_session.dart';
 import '../models/course.dart';
+import '../models/unit.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
 
-  static const int _version = 8;
+  static const int _version = 9;
   static Database? _database;
 
   Future<Database> get database async {
@@ -137,6 +138,22 @@ class DatabaseHelper {
         accuracy_after REAL NOT NULL,
         happened_at TEXT NOT NULL,
         FOREIGN KEY (mcq_id) REFERENCES mcq_history (id) ON DELETE CASCADE,
+        FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Create units table for subject units/topics
+    await db.execute('''
+      CREATE TABLE units (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        order_index INTEGER NOT NULL DEFAULT 0,
+        start_date TEXT,
+        end_date TEXT,
+        is_current INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
         FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
       )
     ''');
@@ -284,6 +301,26 @@ class DatabaseHelper {
       // Add indexes for performance
       await db.execute('CREATE INDEX IF NOT EXISTS mcq_subject_created_idx ON mcq_history(subject_id, created_at DESC)');
       await db.execute('CREATE INDEX IF NOT EXISTS completions_subject_time_idx ON mcq_completions(subject_id, happened_at DESC)');
+    }
+    if (oldVersion < 9) {
+      // Add units table for subject unit/topic tracking
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS units (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          subject_id INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          description TEXT,
+          order_index INTEGER NOT NULL DEFAULT 0,
+          start_date TEXT,
+          end_date TEXT,
+          is_current INTEGER NOT NULL DEFAULT 0,
+          created_at TEXT NOT NULL,
+          FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE CASCADE
+        )
+      ''');
+      
+      // Add index for quick unit lookups
+      await db.execute('CREATE INDEX IF NOT EXISTS units_subject_order_idx ON units(subject_id, order_index)');
     }
   }
 
@@ -733,6 +770,83 @@ class DatabaseHelper {
       whereArgs: [subjectId],
       orderBy: 'happened_at DESC',
       limit: limit,
+    );
+  }
+
+  // Unit CRUD operations
+  Future<int> insertUnit(Unit unit) async {
+    final db = await database;
+    return await db.insert('units', unit.toMap());
+  }
+
+  Future<List<Unit>> getUnitsForSubject(int subjectId) async {
+    final db = await database;
+    final maps = await db.query(
+      'units',
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+      orderBy: 'order_index ASC',
+    );
+    return maps.map((map) => Unit.fromMap(map)).toList();
+  }
+
+  Future<Unit?> getCurrentUnit(int subjectId) async {
+    final db = await database;
+    final maps = await db.query(
+      'units',
+      where: 'subject_id = ? AND is_current = 1',
+      whereArgs: [subjectId],
+      limit: 1,
+    );
+    return maps.isNotEmpty ? Unit.fromMap(maps.first) : null;
+  }
+
+  Future<List<Unit>> getActiveUnits(int subjectId) async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+    final maps = await db.query(
+      'units',
+      where: 'subject_id = ? AND (is_current = 1 OR (start_date <= ? AND end_date >= ?))',
+      whereArgs: [subjectId, now, now],
+      orderBy: 'order_index ASC',
+    );
+    return maps.map((map) => Unit.fromMap(map)).toList();
+  }
+
+  Future<int> updateUnit(Unit unit) async {
+    final db = await database;
+    return await db.update(
+      'units',
+      unit.toMap(),
+      where: 'id = ?',
+      whereArgs: [unit.id],
+    );
+  }
+
+  Future<int> deleteUnit(int id) async {
+    final db = await database;
+    return await db.delete(
+      'units',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> setCurrentUnit(int subjectId, int unitId) async {
+    final db = await database;
+    // First, unset all current units for this subject
+    await db.update(
+      'units',
+      {'is_current': 0},
+      where: 'subject_id = ?',
+      whereArgs: [subjectId],
+    );
+    // Then set the specified unit as current
+    await db.update(
+      'units',
+      {'is_current': 1},
+      where: 'id = ?',
+      whereArgs: [unitId],
     );
   }
 

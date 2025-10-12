@@ -17,6 +17,7 @@ class _SubjectSearchScreenState extends ConsumerState<SubjectSearchScreen> {
   List<Course> _filteredCourses = [];
   String _selectedCategory = 'All';
   bool _isLoading = true;
+  String _selectedCourseType = 'All'; // All, AP, College, High School, IB
 
   @override
   void initState() {
@@ -48,15 +49,24 @@ class _SubjectSearchScreenState extends ConsumerState<SubjectSearchScreen> {
     final query = _searchController.text;
     
     List<Course> results;
-    if (query.isEmpty && _selectedCategory == 'All') {
+    if (query.isEmpty && _selectedCategory == 'All' && _selectedCourseType == 'All') {
       results = await service.getAllCourses();
     } else if (query.isEmpty) {
-      results = await service.getCoursesByCategory(_selectedCategory);
-    } else {
-      results = await service.searchCourses(query);
+      results = await service.getAllCourses();
+      // Apply category filter
       if (_selectedCategory != 'All') {
         results = results.where((c) => c.category == _selectedCategory).toList();
       }
+      // Apply course type filter
+      results = _applyCourseTypeFilter(results);
+    } else {
+      results = await service.searchCourses(query);
+      // Apply category filter
+      if (_selectedCategory != 'All') {
+        results = results.where((c) => c.category == _selectedCategory).toList();
+      }
+      // Apply course type filter
+      results = _applyCourseTypeFilter(results);
     }
     
     if (mounted) {
@@ -71,6 +81,56 @@ class _SubjectSearchScreenState extends ConsumerState<SubjectSearchScreen> {
       _selectedCategory = category;
     });
     await _onSearchChanged();
+  }
+
+  List<Course> _applyCourseTypeFilter(List<Course> courses) {
+    if (_selectedCourseType == 'All') return courses;
+    
+    return courses.where((course) {
+      switch (_selectedCourseType) {
+        case 'AP':
+          return course.courseId.startsWith('AP-');
+        case 'College':
+          // College courses typically have format like "MATH 101", "ENG 102" etc.
+          return !course.courseId.startsWith('AP-') && 
+                 !course.courseId.startsWith('IB-') &&
+                 RegExp(r'^[A-Z]+ \d+').hasMatch(course.courseId);
+        case 'High School':
+          // High school courses don't have AP- prefix and aren't college format
+          return !course.courseId.startsWith('AP-') && 
+                 !course.courseId.startsWith('IB-') &&
+                 !RegExp(r'^[A-Z]+ \d+').hasMatch(course.courseId);
+        case 'IB':
+          return course.courseId.startsWith('IB-');
+        default:
+          return true;
+      }
+    }).toList();
+  }
+
+  Future<void> _onCourseTypeChanged(String type) async {
+    setState(() {
+      _selectedCourseType = type;
+    });
+    await _onSearchChanged();
+  }
+
+  Widget _buildCourseTypeChip(String type, IconData icon) {
+    final isSelected = _selectedCourseType == type;
+    return FilterChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16),
+          const SizedBox(width: 6),
+          Text(type),
+        ],
+      ),
+      selected: isSelected,
+      onSelected: (_) => _onCourseTypeChanged(type),
+      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+      selectedColor: Theme.of(context).colorScheme.secondaryContainer,
+    );
   }
 
   Future<void> _addSubject(Course course) async {
@@ -191,7 +251,41 @@ class _SubjectSearchScreenState extends ConsumerState<SubjectSearchScreen> {
             error: (_, __) => const SizedBox(height: 50),
           ),
 
-          const SizedBox(height: 16),
+          // Course Type Filters
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Course Type:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildCourseTypeChip('All', Icons.apps),
+                      const SizedBox(width: 8),
+                      _buildCourseTypeChip('AP', Icons.school),
+                      const SizedBox(width: 8),
+                      _buildCourseTypeChip('College', Icons.account_balance),
+                      const SizedBox(width: 8),
+                      _buildCourseTypeChip('High School', Icons.local_library),
+                      const SizedBox(width: 8),
+                      _buildCourseTypeChip('IB', Icons.public),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 8),
 
           // Results
           Expanded(

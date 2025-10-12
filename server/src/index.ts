@@ -48,13 +48,15 @@ const mcqCache = new MCQCache(50, 5);
 // Request validation schemas
 const GenerateMCQRequestSchema = z.object({
   subject: z.string().min(1, "Subject is required").max(200),
-  choices: z.number().int().min(2).max(5).optional().default(4)
+  choices: z.number().int().min(2).max(5).optional().default(4),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional()
 });
 
 const GenerateMCQBatchRequestSchema = z.object({
   subject: z.string().min(1, "Subject is required").max(200),
   choices: z.number().int().min(2).max(5).optional().default(4),
-  count: z.number().int().min(1).max(20).optional().default(5)
+  count: z.number().int().min(1).max(20).optional().default(5),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional()
 });
 
 /**
@@ -73,19 +75,19 @@ app.post("/api/generate-mcq", async (req, res) => {
       });
     }
 
-    const { subject, choices } = validation.data;
+    const { subject, choices, difficulty } = validation.data;
 
-    logger.info({ subject, choices }, "Generating MCQ");
+    logger.info({ subject, choices, difficulty }, "Generating MCQ");
 
     // Check cache first
     const cached = mcqCache.get(subject, choices);
-    if (cached) {
+    if (cached && (!difficulty || cached.difficulty === difficulty)) {
       logger.info({ subject, id: cached.id }, "Returning cached MCQ");
       return res.json(cached);
     }
 
     // Generate new MCQ
-    const mcq = await generateMcq(subject, choices);
+    const mcq = await generateMcq(subject, choices, difficulty);
     
     // Ensure ID is set
     if (!mcq.id) {

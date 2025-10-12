@@ -49,7 +49,11 @@ export type MCQ = z.infer<typeof MCQSchema>;
 const SYSTEM_PROMPT = `You generate rigorous, unambiguous multiple-choice questions. Output ONLY valid JSON matching the MCQ schema. Explanations must be concise, self-contained, and tailored to each option (distinct reason for each). Do not include prose outside JSON.`;
 
 // Generate user prompt template
-function getUserPrompt(subject: string, choices: number): string {
+function getUserPrompt(subject: string, choices: number, difficulty?: string): string {
+  const difficultyGuidance = difficulty 
+    ? `- Difficulty: MUST be "${difficulty}" level. ${getDifficultyGuidance(difficulty)}`
+    : '- Difficulty: default medium; vary occasionally.';
+  
   return `
 Subject: ${subject}
 Choices: ${choices}
@@ -59,7 +63,7 @@ Constraints:
 - Options must be plausible and mutually exclusive.
 - Exactly one correct option.
 - Provide a short topic tag in "source_hint".
-- Difficulty: default medium; vary occasionally.
+${difficultyGuidance}
 - In "explanations_by_option", explain briefly why EACH option is right or wrong (different rationale per option).
 - Keep total reading time ~45–60 seconds.
 
@@ -67,12 +71,26 @@ Return JSON ONLY (MCQ schema).
   `.trim();
 }
 
+function getDifficultyGuidance(difficulty: string): string {
+  switch (difficulty) {
+    case 'easy':
+      return 'Test basic definitions, fundamental concepts, or simple recall. Suitable for beginners.';
+    case 'medium':
+      return 'Test understanding and application of concepts. Requires some analysis.';
+    case 'hard':
+      return 'Test advanced understanding, synthesis, or complex problem-solving. Requires deep knowledge.';
+    default:
+      return '';
+  }
+}
+
 /**
  * Generate a single MCQ for the given subject
  */
 export async function generateMcq(
   subject: string, 
-  choices: number = 4
+  choices: number = 4,
+  difficulty?: string
 ): Promise<MCQ> {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY not configured");
@@ -91,7 +109,7 @@ export async function generateMcq(
       model: MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: getUserPrompt(subject, choices) }
+        { role: "user", content: getUserPrompt(subject, choices, difficulty) }
       ],
       response_format: { type: "json_object" },
       temperature: 0.7,
