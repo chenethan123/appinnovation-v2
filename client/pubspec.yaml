@@ -1,0 +1,53 @@
+name: formula_quizzer_client
+description: "FormulaQuizzer Client - Connects to server with cross-device sync"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Local Database (Offline-first)
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # HTTP Requests (Server API)
+  http: ^1.5.0
+  dio: ^5.3.2
+  
+  # Charts and UI
+  fl_chart: ^0.66.0
+  
+  # Utilities
+  intl: ^0.19.0
+  html: ^0.15.4
+  shared_preferences: ^2.2.2
+  dart_openai: ^5.1.0
+  crypto: ^3.0.3
+  uuid: ^4.2.2
+  
+  # Local Notifications
+  flutter_local_notifications: ^16.3.2
+  timezone: ^0.9.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/courses.json
+    - data/course_units.json

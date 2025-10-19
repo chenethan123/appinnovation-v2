@@ -1,0 +1,220 @@
+{
+  "AP Calculus AB": [
+    {"order_index": 1, "name": "Unit 1: Limits and Continuity", "description": "Defining limits, continuity, and asymptotic behavior"},
+    {"order_index": 2, "name": "Unit 2: Differentiation: Definition and Fundamental Properties", "description": "Derivative as a rate of change, rules of differentiation"},
+    {"order_index": 3, "name": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions", "description": "Chain rule, implicit differentiation, derivatives of inverse functions"},
+    {"order_index": 4, "name": "Unit 4: Contextual Applications of Differentiation", "description": "Related rates, optimization, linear approximation"},
+    {"order_index": 5, "name": "Unit 5: Analytical Applications of Differentiation", "description": "Mean Value Theorem, curve sketching, optimization"},
+    {"order_index": 6, "name": "Unit 6: Integration and Accumulation of Change", "description": "Riemann sums, definite integrals, Fundamental Theorem of Calculus"},
+    {"order_index": 7, "name": "Unit 7: Differential Equations", "description": "Slope fields, separation of variables, exponential models"},
+    {"order_index": 8, "name": "Unit 8: Applications of Integration", "description": "Area between curves, volumes of revolution, average value"}
+  ],
+  "AP Calculus BC": [
+    {"order_index": 1, "name": "Unit 1: Limits and Continuity", "description": "Defining limits, continuity, and asymptotic behavior"},
+    {"order_index": 2, "name": "Unit 2: Differentiation", "description": "Derivative rules and applications"},
+    {"order_index": 3, "name": "Unit 3: Composite and Implicit Functions", "description": "Chain rule and implicit differentiation"},
+    {"order_index": 4, "name": "Unit 4: Contextual Applications", "description": "Related rates and optimization"},
+    {"order_index": 5, "name": "Unit 5: Analytical Applications", "description": "Mean Value Theorem and curve analysis"},
+    {"order_index": 6, "name": "Unit 6: Integration", "description": "Integrals and Fundamental Theorem"},
+    {"order_index": 7, "name": "Unit 7: Differential Equations", "description": "Solving differential equations"},
+    {"order_index": 8, "name": "Unit 8: Integration Applications", "description": "Volumes and applications"},
+    {"order_index": 9, "name": "Unit 9: Parametric and Polar", "description": "Parametric equations and polar coordinates"},
+    {"order_index": 10, "name": "Unit 10: Series", "description": "Infinite sequences and series"}
+  ],
+  "AP Statistics": [
+    {"order_index": 1, "name": "Unit 1: Exploring One-Variable Data", "description": "Distributions, center, spread, and visualization"},
+    {"order_index": 2, "name": "Unit 2: Exploring Two-Variable Data", "description": "Correlation, regression, and residuals"},
+    {"order_index": 3, "name": "Unit 3: Collecting Data", "description": "Sampling methods and experimental design"},
+    {"order_index": 4, "name": "Unit 4: Probability and Random Variables", "description": "Basic probability and distributions"},
+    {"order_index": 5, "name": "Unit 5: Sampling Distributions", "description": "Central Limit Theorem"},
+    {"order_index": 6, "name": "Unit 6: Inference for Proportions", "description": "Confidence intervals and tests"},
+    {"order_index": 7, "name": "Unit 7: Inference for Means", "description": "t-tests and intervals"},
+    {"order_index": 8, "name": "Unit 8: Chi-Square Tests", "description": "Categorical data analysis"},
+    {"order_index": 9, "name": "Unit 9: Inference for Slopes", "description": "Regression inference"}
+  ],
+  "AP Computer Science A": [
+    {"order_index": 1, "name": "Unit 1: Primitive Types", "description": "Variables, data types, and expressions"},
+    {"order_index": 2, "name": "Unit 2: Using Objects", "description": "Object instantiation and methods"},
+    {"order_index": 3, "name": "Unit 3: Boolean Expressions and if Statements", "description": "Conditional logic"},
+    {"order_index": 4, "name": "Unit 4: Iteration", "description": "Loops and nested loops"},
+    {"order_index": 5, "name": "Unit 5: Writing Classes", "description": "Class design and encapsulation"},
+    {"order_index": 6, "name": "Unit 6: Array", "description": "Array operations and algorithms"},
+    {"order_index": 7, "name": "Unit 7: ArrayList", "description": "Dynamic data structures"},
+    {"order_index": 8, "name": "Unit 8: 2D Array", "description": "Two-dimensional arrays"},
+    {"order_index": 9, "name": "Unit 9: Inheritance", "description": "Inheritance and polymorphism"},
+    {"order_index": 10, "name": "Unit 10: Recursion", "description": "Recursive problem-solving"}
+  ],
+  "AP Computer Science Principles": [
+    {"order_index": 1, "name": "Unit 1: Digital Information", "description": "Binary, data representation"},
+    {"order_index": 2, "name": "Unit 2: The Internet", "description": "Networking and protocols"},
+    {"order_index": 3, "name": "Unit 3: Intro to App Design", "description": "UI/UX and programming basics"},
+    {"order_index": 4, "name": "Unit 4: Variables and Algorithms", "description": "Data processing"},
+    {"order_index": 5, "name": "Unit 5: Lists and Procedures", "description": "Data structures"},
+    {"order_index": 6, "name": "Unit 6: Algorithms", "description": "Algorithm efficiency"},
+    {"order_index": 7, "name": "Unit 7: Parameters and Return", "description": "Functions and modularity"},
+    {"order_index": 8, "name": "Unit 8: Data", "description": "Data analysis and visualization"},
+    {"order_index": 9, "name": "Unit 9: Cybersecurity", "description": "Security and privacy"},
+    {"order_index": 10, "name": "Unit 10: Global Impact", "description": "Computing's societal impact"}
+  ],
+  "AP Physics 1": [
+    {"order_index": 1, "name": "Unit 1: Kinematics", "description": "Motion in 1D and 2D"},
+    {"order_index": 2, "name": "Unit 2: Dynamics", "description": "Newton's laws and forces"},
+    {"order_index": 3, "name": "Unit 3: Circular Motion and Gravitation", "description": "Centripetal force and gravity"},
+    {"order_index": 4, "name": "Unit 4: Energy", "description": "Work and energy conservation"},
+    {"order_index": 5, "name": "Unit 5: Momentum", "description": "Impulse and collisions"},
+    {"order_index": 6, "name": "Unit 6: Simple Harmonic Motion", "description": "Springs and pendulums"},
+    {"order_index": 7, "name": "Unit 7: Torque and Rotational Motion", "description": "Angular mechanics"},
+    {"order_index": 8, "name": "Unit 8: Electric Charge and Force", "description": "Electrostatics"},
+    {"order_index": 9, "name": "Unit 9: DC Circuits", "description": "Current and resistance"},
+    {"order_index": 10, "name": "Unit 10: Mechanical Waves", "description": "Wave properties"}
+  ],
+  "AP Physics 2": [
+    {"order_index": 1, "name": "Unit 1: Fluids", "description": "Pressure, buoyancy, fluid dynamics"},
+    {"order_index": 2, "name": "Unit 2: Thermodynamics", "description": "Heat, temperature, laws of thermodynamics"},
+    {"order_index": 3, "name": "Unit 3: Electric Force and Potential", "description": "Electric fields and potential"},
+    {"order_index": 4, "name": "Unit 4: Electric Circuits", "description": "DC and RC circuits"},
+    {"order_index": 5, "name": "Unit 5: Magnetism", "description": "Magnetic fields and forces"},
+    {"order_index": 6, "name": "Unit 6: Geometric and Physical Optics", "description": "Light, lenses, mirrors"},
+    {"order_index": 7, "name": "Unit 7: Quantum Physics", "description": "Photons and atomic structure"}
+  ],
+  "AP Physics C: Mechanics": [
+    {"order_index": 1, "name": "Unit 1: Kinematics", "description": "Motion with calculus"},
+    {"order_index": 2, "name": "Unit 2: Newton's Laws", "description": "Forces and dynamics"},
+    {"order_index": 3, "name": "Unit 3: Work, Energy, Power", "description": "Energy conservation"},
+    {"order_index": 4, "name": "Unit 4: Linear Momentum", "description": "Collisions and impulse"},
+    {"order_index": 5, "name": "Unit 5: Rotation", "description": "Rotational kinematics and dynamics"},
+    {"order_index": 6, "name": "Unit 6: Oscillations", "description": "Simple harmonic motion"},
+    {"order_index": 7, "name": "Unit 7: Gravitation", "description": "Universal gravitation"}
+  ],
+  "AP Physics C: Electricity and Magnetism": [
+    {"order_index": 1, "name": "Unit 1: Electrostatics", "description": "Electric charge and field"},
+    {"order_index": 2, "name": "Unit 2: Conductors and Capacitors", "description": "Electric potential and capacitance"},
+    {"order_index": 3, "name": "Unit 3: Electric Circuits", "description": "Current, resistance, Kirchhoff's laws"},
+    {"order_index": 4, "name": "Unit 4: Magnetic Fields", "description": "Magnetism and magnetic forces"},
+    {"order_index": 5, "name": "Unit 5: Electromagnetism", "description": "Induction and Maxwell's equations"}
+  ],
+  "AP Chemistry": [
+    {"order_index": 1, "name": "Unit 1: Atomic Structure", "description": "Atoms, moles, mass spectrometry"},
+    {"order_index": 2, "name": "Unit 2: Molecular Structure", "description": "Bonding and molecular geometry"},
+    {"order_index": 3, "name": "Unit 3: Intermolecular Forces", "description": "IMFs, solids, liquids, gases"},
+    {"order_index": 4, "name": "Unit 4: Chemical Reactions", "description": "Types of reactions and stoichiometry"},
+    {"order_index": 5, "name": "Unit 5: Kinetics", "description": "Reaction rates and mechanisms"},
+    {"order_index": 6, "name": "Unit 6: Thermodynamics", "description": "Energy changes and enthalpy"},
+    {"order_index": 7, "name": "Unit 7: Equilibrium", "description": "Chemical equilibrium"},
+    {"order_index": 8, "name": "Unit 8: Acids and Bases", "description": "pH, buffers, titrations"},
+    {"order_index": 9, "name": "Unit 9: Thermodynamics II", "description": "Entropy and Gibbs free energy"}
+  ],
+  "AP Biology": [
+    {"order_index": 1, "name": "Unit 1: Chemistry of Life", "description": "Water, carbon, macromolecules"},
+    {"order_index": 2, "name": "Unit 2: Cell Structure", "description": "Cell organelles and membranes"},
+    {"order_index": 3, "name": "Unit 3: Cellular Energetics", "description": "Photosynthesis and respiration"},
+    {"order_index": 4, "name": "Unit 4: Cell Communication", "description": "Signal transduction"},
+    {"order_index": 5, "name": "Unit 5: Cell Division", "description": "Mitosis and meiosis"},
+    {"order_index": 6, "name": "Unit 6: Genetics", "description": "Mendelian genetics and inheritance"},
+    {"order_index": 7, "name": "Unit 7: Gene Expression", "description": "DNA, RNA, protein synthesis"},
+    {"order_index": 8, "name": "Unit 8: Evolution", "description": "Natural selection and speciation"}
+  ],
+  "AP Environmental Science": [
+    {"order_index": 1, "name": "Unit 1: The Living World", "description": "Ecosystems and biodiversity"},
+    {"order_index": 2, "name": "Unit 2: The Living World II", "description": "Biogeochemical cycles"},
+    {"order_index": 3, "name": "Unit 3: Populations", "description": "Population ecology"},
+    {"order_index": 4, "name": "Unit 4: Earth Systems", "description": "Geology and resources"},
+    {"order_index": 5, "name": "Unit 5: Land and Water Use", "description": "Agriculture and water resources"},
+    {"order_index": 6, "name": "Unit 6: Energy", "description": "Energy sources and consumption"},
+    {"order_index": 7, "name": "Unit 7: Atmospheric Pollution", "description": "Air quality"},
+    {"order_index": 8, "name": "Unit 8: Aquatic and Terrestrial Pollution", "description": "Water and soil pollution"},
+    {"order_index": 9, "name": "Unit 9: Global Change", "description": "Climate change"}
+  ],
+  "AP Psychology": [
+    {"order_index": 1, "name": "Unit 1: Scientific Foundations", "description": "Research methods and ethics"},
+    {"order_index": 2, "name": "Unit 2: Biological Bases", "description": "Brain, neurons, nervous system"},
+    {"order_index": 3, "name": "Unit 3: Sensation and Perception", "description": "Sensory processing"},
+    {"order_index": 4, "name": "Unit 4: Learning", "description": "Classical and operant conditioning"},
+    {"order_index": 5, "name": "Unit 5: Cognitive Psychology", "description": "Memory, thinking, language"},
+    {"order_index": 6, "name": "Unit 6: Developmental Psychology", "description": "Lifespan development"},
+    {"order_index": 7, "name": "Unit 7: Motivation and Emotion", "description": "Drives and emotions"},
+    {"order_index": 8, "name": "Unit 8: Clinical Psychology", "description": "Disorders and treatments"},
+    {"order_index": 9, "name": "Unit 9: Social Psychology", "description": "Social influence and cognition"}
+  ],
+  "AP United States History": [
+    {"order_index": 1, "name": "Period 1: 1491-1607", "description": "Pre-Columbian and colonial beginnings"},
+    {"order_index": 2, "name": "Period 2: 1607-1754", "description": "Colonial development"},
+    {"order_index": 3, "name": "Period 3: 1754-1800", "description": "Revolution and early republic"},
+    {"order_index": 4, "name": "Period 4: 1800-1848", "description": "Expansion and reform"},
+    {"order_index": 5, "name": "Period 5: 1844-1877", "description": "Civil War and Reconstruction"},
+    {"order_index": 6, "name": "Period 6: 1865-1898", "description": "Gilded Age"},
+    {"order_index": 7, "name": "Period 7: 1890-1945", "description": "World Wars and Depression"},
+    {"order_index": 8, "name": "Period 8: 1945-1980", "description": "Cold War era"},
+    {"order_index": 9, "name": "Period 9: 1980-Present", "description": "Modern America"}
+  ],
+  "AP World History: Modern": [
+    {"order_index": 1, "name": "Unit 1: The Global Tapestry (1200-1450)", "description": "Global trade networks"},
+    {"order_index": 2, "name": "Unit 2: Networks of Exchange (1200-1450)", "description": "Silk Roads and Indian Ocean trade"},
+    {"order_index": 3, "name": "Unit 3: Land-Based Empires (1450-1750)", "description": "Gunpowder empires"},
+    {"order_index": 4, "name": "Unit 4: Transoceanic Interconnections (1450-1750)", "description": "Columbian Exchange"},
+    {"order_index": 5, "name": "Unit 5: Revolutions (1750-1900)", "description": "Political and industrial revolutions"},
+    {"order_index": 6, "name": "Unit 6: Consequences of Industrialization (1750-1900)", "description": "Global changes"},
+    {"order_index": 7, "name": "Unit 7: Global Conflict (1900-present)", "description": "World Wars"},
+    {"order_index": 8, "name": "Unit 8: Cold War (1900-present)", "description": "Ideological conflicts"},
+    {"order_index": 9, "name": "Unit 9: Globalization (1900-present)", "description": "Modern interconnections"}
+  ],
+  "AP Microeconomics": [
+    {"order_index": 1, "name": "Unit 1: Basic Economic Concepts", "description": "Scarcity, opportunity cost, PPF"},
+    {"order_index": 2, "name": "Unit 2: Supply and Demand", "description": "Market equilibrium"},
+    {"order_index": 3, "name": "Unit 3: Production, Cost, Perfect Competition", "description": "Firm behavior"},
+    {"order_index": 4, "name": "Unit 4: Imperfect Competition", "description": "Monopoly, oligopoly, monopolistic competition"},
+    {"order_index": 5, "name": "Unit 5: Factor Markets", "description": "Labor and resource markets"},
+    {"order_index": 6, "name": "Unit 6: Market Failure", "description": "Externalities, public goods"}
+  ],
+  "AP Macroeconomics": [
+    {"order_index": 1, "name": "Unit 1: Basic Economic Concepts", "description": "Economic systems and models"},
+    {"order_index": 2, "name": "Unit 2: Economic Indicators", "description": "GDP, unemployment, inflation"},
+    {"order_index": 3, "name": "Unit 3: National Income", "description": "Aggregate demand and supply"},
+    {"order_index": 4, "name": "Unit 4: Financial Sector", "description": "Money, banking, monetary policy"},
+    {"order_index": 5, "name": "Unit 5: Long-Run Consequences", "description": "Economic growth"},
+    {"order_index": 6, "name": "Unit 6: Open Economy", "description": "International trade and finance"}
+  ],
+  "AP English Language and Composition": [
+    {"order_index": 1, "name": "Unit 1: Claims and Evidence", "description": "Rhetorical situation and claims"},
+    {"order_index": 2, "name": "Unit 2: Reasoning and Organization", "description": "Argument structure"},
+    {"order_index": 3, "name": "Unit 3: Rhetorical Choices", "description": "Style and purpose"},
+    {"order_index": 4, "name": "Unit 4: Analyzing Arguments", "description": "Evaluating sources"},
+    {"order_index": 5, "name": "Unit 5: Comparing Arguments", "description": "Synthesis"},
+    {"order_index": 6, "name": "Unit 6: Creating Arguments", "description": "Research and argumentation"},
+    {"order_index": 7, "name": "Unit 7: Language and Style", "description": "Grammar and mechanics"},
+    {"order_index": 8, "name": "Unit 8: Synthesis", "description": "Multiple source analysis"},
+    {"order_index": 9, "name": "Unit 9: Revision", "description": "Editing and refining"}
+  ],
+  "AP English Literature and Composition": [
+    {"order_index": 1, "name": "Unit 1: Short Fiction", "description": "Character, setting, structure"},
+    {"order_index": 2, "name": "Unit 2: Poetry", "description": "Figurative language and sound"},
+    {"order_index": 3, "name": "Unit 3: Longer Fiction", "description": "Plot and narrative perspective"},
+    {"order_index": 4, "name": "Unit 4: Drama", "description": "Dramatic structure and dialogue"},
+    {"order_index": 5, "name": "Unit 5: Literary Analysis", "description": "Close reading techniques"},
+    {"order_index": 6, "name": "Unit 6: Comparative Analysis", "description": "Comparing texts"},
+    {"order_index": 7, "name": "Unit 7: Literary Argumentation", "description": "Thesis development"},
+    {"order_index": 8, "name": "Unit 8: Literary Periods", "description": "Historical context"},
+    {"order_index": 9, "name": "Unit 9: Open Question", "description": "Independent analysis"}
+  ],
+  "AP United States Government and Politics": [
+    {"order_index": 1, "name": "Unit 1: Foundations", "description": "Constitution and federalism"},
+    {"order_index": 2, "name": "Unit 2: Political Beliefs", "description": "Ideology and political culture"},
+    {"order_index": 3, "name": "Unit 3: Political Participation", "description": "Voting and civic engagement"},
+    {"order_index": 4, "name": "Unit 4: Parties and Elections", "description": "Party systems and campaigns"},
+    {"order_index": 5, "name": "Unit 5: Congress", "description": "Legislative branch"},
+    {"order_index": 6, "name": "Unit 6: Presidency", "description": "Executive branch"},
+    {"order_index": 7, "name": "Unit 7: Bureaucracy", "description": "Federal agencies"},
+    {"order_index": 8, "name": "Unit 8: Judiciary", "description": "Courts and judicial review"},
+    {"order_index": 9, "name": "Unit 9: Civil Liberties", "description": "Bill of Rights"},
+    {"order_index": 10, "name": "Unit 10: Civil Rights", "description": "Equal protection"}
+  ],
+  "AP Human Geography": [
+    {"order_index": 1, "name": "Unit 1: Thinking Geographically", "description": "Maps and spatial concepts"},
+    {"order_index": 2, "name": "Unit 2: Population and Migration", "description": "Demographics"},
+    {"order_index": 3, "name": "Unit 3: Cultural Patterns", "description": "Language, religion, ethnicity"},
+    {"order_index": 4, "name": "Unit 4: Political Patterns", "description": "States and boundaries"},
+    {"order_index": 5, "name": "Unit 5: Agriculture", "description": "Food production"},
+    {"order_index": 6, "name": "Unit 6: Industrialization", "description": "Economic development"},
+    {"order_index": 7, "name": "Unit 7: Cities and Urban Land Use", "description": "Urbanization"}
+  ]
+}
