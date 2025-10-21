@@ -24,8 +24,10 @@ class _MCQLoadingScreenState extends ConsumerState<MCQLoadingScreen> {
   @override
   void initState() {
     super.initState();
-    // Start generating immediately
-    _generateQuestion();
+    // Start generating after build completes to avoid provider modification error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _generateQuestion();
+    });
   }
 
   Future<void> _generateQuestion() async {

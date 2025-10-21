@@ -1,0 +1,302 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../main.dart';
+import '../models/subject.dart';
+import '../models/question.dart';
+import '../models/quiz_session.dart';
+import '../database/database_helper.dart';
+import 'auth_service.dart';
+
+/// Sync service for uploading/downloading data between local SQLite and Supabase cloud
+/// Implements offline-first architecture with bi-directional sync
+class SyncService {
+  final _authService = AuthService();
+  final _db = DatabaseHelper();
+  
+  /// Upload subjects to cloud
+  Future<void> uploadSubjects() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot upload subjects: User not logged in');
+      return;
+    }
+    
+    try {
+      final subjects = await _db.getAllSubjects();
+      print('📤 Uploading ${subjects.length} subjects...');
+      
+      for (var subject in subjects) {
+        await supabase.from('subjects').upsert({
+          'user_id': _authService.userId,
+          'name': subject.name,
+          'description': subject.description,
+          'color': subject.color,
+          'is_active': subject.isActive,
+          'total_questions': subject.totalQuestions,
+          'correct_answers': subject.correctAnswers,
+          'difficulty_weight': subject.difficultyWeight,
+          'updated_at': DateTime.now().toIso8601String(),
+        }, onConflict: 'user_id,name');
+      }
+      
+      print('✅ ${subjects.length} subjects uploaded to cloud');
+    } catch (e) {
+      print('❌ Upload subjects error: $e');
+      rethrow;
+    }
+  }
+  
+  /// Download subjects from cloud
+  Future<List<Subject>> downloadSubjects() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot download subjects: User not logged in');
+      return [];
+    }
+    
+    try {
+      print('📥 Downloading subjects from cloud...');
+      
+      final response = await supabase
+        .from('subjects')
+        .select()
+        .eq('user_id', _authService.userId!);
+      
+      final subjects = <Subject>[];
+      
+      for (var data in response) {
+        final subject = Subject(
+          id: 0, // Will be auto-assigned by local DB
+          name: data['name'] ?? '',
+          description: data['description'] ?? '',
+          color: data['color'] ?? '#6366f1',
+          isActive: data['is_active'] ?? true,
+          totalQuestions: data['total_questions'] ?? 0,
+          correctAnswers: data['correct_answers'] ?? 0,
+          difficultyWeight: (data['difficulty_weight'] ?? 0.5).toDouble(),
+          createdAt: DateTime.parse(data['created_at']),
+          updatedAt: DateTime.parse(data['updated_at']),
+        );
+        
+        subjects.add(subject);
+      }
+      
+      print('✅ Downloaded ${subjects.length} subjects from cloud');
+      return subjects;
+    } catch (e) {
+      print('❌ Download subjects error: $e');
+      rethrow;
+    }
+  }
+  
+  /// Upload questions to cloud
+  Future<void> uploadQuestions() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot upload questions: User not logged in');
+      return;
+    }
+    
+    try {
+      final subjects = await _db.getAllSubjects();
+      int totalQuestions = 0;
+      
+      print('📤 Uploading questions...');
+      
+      for (var subject in subjects) {
+        final questions = await _db.getQuestionsBySubject(subject.id!);
+        
+        for (var question in questions) {
+          await supabase.from('questions').upsert({
+            'user_id': _authService.userId,
+            'subject_id': subject.id.toString(), // Store as string for now
+            'question_text': question.questionText,
+            'options': question.options,
+            'correct_answer': question.correctAnswer,
+            'explanation': question.explanation,
+            'difficulty': question.difficulty,
+            'category': question.category,
+            'is_from_ai': question.isFromAI,
+            'source': question.source,
+            'source_url': question.sourceUrl,
+          });
+          totalQuestions++;
+        }
+      }
+      
+      print('✅ $totalQuestions questions uploaded to cloud');
+    } catch (e) {
+      print('❌ Upload questions error: $e');
+      rethrow;
+    }
+  }
+  
+  /// Download questions from cloud
+  Future<void> downloadQuestions() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot download questions: User not logged in');
+      return;
+    }
+    
+    try {
+      print('📥 Downloading questions from cloud...');
+      
+      final response = await supabase
+        .from('questions')
+        .select()
+        .eq('user_id', _authService.userId!);
+      
+      int questionCount = 0;
+      
+      for (var data in response) {
+        // Find matching subject by name
+        final subjects = await _db.getAllSubjects();
+        final matchingSubject = subjects.firstWhere(
+          (s) => s.id.toString() == data['subject_id'],
+          orElse: () => subjects.first, // Fallback to first subject
+        );
+        
+        final question = Question(
+          id: 0, // Auto-assigned
+          subjectId: matchingSubject.id!,
+          questionText: data['question_text'],
+          options: List<String>.from(data['options'] ?? []),
+          correctAnswer: data['correct_answer'],
+          explanation: data['explanation'],
+          difficulty: data['difficulty'],
+          category: data['category'],
+          createdAt: DateTime.tryParse(data['created_at'] ?? '') ?? DateTime.now(),
+          isFromAI: data['is_from_ai'] ?? false,
+          source: data['source'],
+          sourceUrl: data['source_url'],
+        );
+        
+        await _db.insertQuestion(question);
+        questionCount++;
+      }
+      
+      print('✅ Downloaded $questionCount questions from cloud');
+    } catch (e) {
+      print('❌ Download questions error: $e');
+      rethrow;
+    }
+  }
+  
+  /// Upload quiz sessions to cloud
+  /// Note: Disabled temporarily due to UUID/integer ID mismatch
+  Future<void> uploadQuizSessions() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot upload quiz sessions: User not logged in');
+      return;
+    }
+    
+    // Skip quiz session sync for now (local IDs don't match cloud UUIDs)
+    print('⏭️ Skipping quiz session sync (not yet implemented)');
+    return;
+  }
+  
+  /// Full bi-directional sync (upload + download)
+  Future<SyncResult> fullSync() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot sync: User not logged in');
+      return SyncResult(success: false, message: 'User not logged in');
+    }
+    
+    try {
+      print('🔄 Starting full sync...');
+      
+      // Upload local changes first
+      await uploadSubjects();
+      await uploadQuestions();
+      await uploadQuizSessions();
+      
+      // Download latest from cloud
+      final cloudSubjects = await downloadSubjects();
+      await downloadQuestions();
+      
+      print('✅ Full sync completed successfully!');
+      return SyncResult(
+        success: true,
+        message: 'Synced ${cloudSubjects.length} subjects',
+        subjectCount: cloudSubjects.length,
+      );
+    } catch (e) {
+      print('❌ Full sync error: $e');
+      return SyncResult(
+        success: false,
+        message: 'Sync failed: $e',
+      );
+    }
+  }
+  
+  /// Auto-sync on app launch
+  Future<void> syncOnLaunch() async {
+    if (_authService.isLoggedIn) {
+      print('🚀 Auto-sync on launch...');
+      await fullSync();
+    } else {
+      print('⚠️ Skipping auto-sync: User not logged in');
+    }
+  }
+  
+  /// Check if sync is needed (compare local vs cloud)
+  Future<bool> needsSync() async {
+    if (!_authService.isLoggedIn) return false;
+    
+    try {
+      // Simple check: compare local subject count vs cloud
+      final localSubjects = await _db.getAllSubjects();
+      final cloudResponse = await supabase
+        .from('subjects')
+        .select('id')
+        .eq('user_id', _authService.userId!);
+      
+      return localSubjects.length != cloudResponse.length;
+    } catch (e) {
+      print('❌ Check sync error: $e');
+      return false;
+    }
+  }
+  
+  /// Clear all cloud data (for testing/reset)
+  Future<void> clearCloudData() async {
+    if (!_authService.isLoggedIn) return;
+    
+    try {
+      print('🗑️ Clearing cloud data...');
+      
+      await supabase
+        .from('quiz_sessions')
+        .delete()
+        .eq('user_id', _authService.userId!);
+      
+      await supabase
+        .from('questions')
+        .delete()
+        .eq('user_id', _authService.userId!);
+      
+      await supabase
+        .from('subjects')
+        .delete()
+        .eq('user_id', _authService.userId!);
+      
+      print('✅ Cloud data cleared');
+    } catch (e) {
+      print('❌ Clear cloud data error: $e');
+      rethrow;
+    }
+  }
+}
+
+/// Result of a sync operation
+class SyncResult {
+  final bool success;
+  final String message;
+  final int subjectCount;
+  final int questionCount;
+  final int sessionCount;
+  
+  SyncResult({
+    required this.success,
+    required this.message,
+    this.subjectCount = 0,
+    this.questionCount = 0,
+    this.sessionCount = 0,
+  });
+}

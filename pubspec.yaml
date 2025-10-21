@@ -60,6 +60,7 @@ dependencies:
   dart_openai: ^5.1.0
   crypto: ^3.0.3
   uuid: ^4.2.2
+  supabase_flutter: ^2.10.3
 
 dev_dependencies:
   flutter_test:

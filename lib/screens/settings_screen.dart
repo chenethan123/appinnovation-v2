@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/quiz_provider.dart';
 import '../services/notification_service.dart';
+import '../services/auth_service.dart';
+import '../services/sync_service.dart';
+import '../services/background_sync_service.dart';
 import 'question_management_screen.dart';
+import 'auth_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -143,6 +147,127 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           );
                         },
                       ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+
+              // Account Section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Account',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Show user email if logged in
+                      if (AuthService().isLoggedIn) ...[
+                        ListTile(
+                          leading: const Icon(Icons.person),
+                          title: const Text('Logged in as'),
+                          subtitle: Text(AuthService().userEmail ?? 'Unknown'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        
+                        const Divider(),
+                        
+                        // Sync status
+                        ListTile(
+                          leading: const Icon(Icons.cloud),
+                          title: const Text('Cloud Sync'),
+                          subtitle: const Text('Your data is synced across devices'),
+                          trailing: const Icon(Icons.check_circle, color: Colors.green),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        
+                        const Divider(),
+                        
+                        // Manual sync button
+                        ListTile(
+                          leading: const Icon(Icons.sync),
+                          title: const Text('Sync Now'),
+                          subtitle: const Text('Manually sync your data'),
+                          trailing: const Icon(Icons.chevron_right),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () async {
+                            if (!mounted) return;
+                            
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('🔄 Syncing...')),
+                            );
+                            
+                            try {
+                              final result = await SyncService().fullSync();
+                              if (!mounted) return;
+                              
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result.success ? '✅ Sync complete!' : '❌ ${result.message}'),
+                                  backgroundColor: result.success ? Colors.green : Colors.red,
+                                ),
+                              );
+                            } catch (e) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('❌ Sync failed: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        
+                        const Divider(),
+                        
+                        // Logout button
+                        ListTile(
+                          leading: const Icon(Icons.logout, color: Colors.red),
+                          title: const Text(
+                            'Logout',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          subtitle: const Text('Sign out of your account'),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => _showLogoutDialog(context),
+                        ),
+                      ] else ...[
+                        // Show login prompt if not logged in
+                        ListTile(
+                          leading: const Icon(Icons.cloud_off),
+                          title: const Text('Offline Mode'),
+                          subtitle: const Text('Login to sync across devices'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        
+                        const Divider(),
+                        
+                        // Login button
+                        ListTile(
+                          leading: const Icon(Icons.login, color: Colors.blue),
+                          title: const Text(
+                            'Login',
+                            style: TextStyle(color: Colors.blue),
+                          ),
+                          subtitle: const Text('Sign in to enable cloud sync'),
+                          trailing: const Icon(Icons.chevron_right),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => const AuthScreen()),
+                            );
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -428,6 +553,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text(
+          'Are you sure you want to logout?\n\n'
+          'Your data is saved locally and will be synced when you login again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              try {
+                // Stop background sync
+                BackgroundSyncService().stopBackgroundSync();
+                
+                // Logout from Supabase
+                await AuthService().signOut();
+                
+                if (!context.mounted) return;
+                
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✅ Logged out successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                
+                // Navigate back to auth screen
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const AuthScreen()),
+                  (route) => false,
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('❌ Logout failed: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                Navigator.of(context).pop();
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }

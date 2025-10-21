@@ -850,6 +850,22 @@ class DatabaseHelper {
     );
   }
 
+  /// Clear all user data (called on logout to prevent data leakage)
+  Future<void> clearAllData() async {
+    final db = await database;
+    
+    print('🗑️ Clearing all user data from local database...');
+    
+    // Delete all data from all tables except courses (shared data)
+    await db.delete('quiz_sessions');
+    await db.delete('questions');
+    await db.delete('units');
+    await db.delete('subjects');
+    await db.delete('quiz_settings');
+    
+    print('✅ All user data cleared from local database');
+  }
+
   Future<void> close() async {
     final db = await database;
     await db.close();

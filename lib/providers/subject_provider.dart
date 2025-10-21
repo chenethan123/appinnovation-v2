@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/subject.dart';
 import '../database/database_helper.dart';
+import '../services/auth_service.dart';
+import '../services/sync_service.dart';
 
 class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
   SubjectNotifier() : super(const AsyncValue.loading()) {
@@ -8,6 +10,18 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
   }
 
   final DatabaseHelper _db = DatabaseHelper();
+  final AuthService _authService = AuthService();
+  final SyncService _syncService = SyncService();
+  
+  // Auto-sync to cloud (non-blocking)
+  void _autoSync() {
+    if (_authService.isLoggedIn) {
+      // Run sync in background without blocking UI
+      _syncService.uploadSubjects().catchError((e) {
+        print('⚠️ Background sync failed: $e');
+      });
+    }
+  }
 
   Future<void> loadSubjects() async {
     try {
@@ -23,6 +37,8 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
     try {
       await _db.insertSubject(subject);
       await loadSubjects(); // Refresh the list
+      _autoSync(); // Auto-sync to cloud
+      print('✅ Subject added and syncing to cloud...');
     } catch (error) {
       // Handle error - could emit error state or show notification
       rethrow;
@@ -33,6 +49,8 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
     try {
       await _db.updateSubject(subject);
       await loadSubjects(); // Refresh the list
+      _autoSync(); // Auto-sync to cloud
+      print('✅ Subject updated and syncing to cloud...');
     } catch (error) {
       rethrow;
     }
@@ -42,6 +60,8 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
     try {
       await _db.deleteSubject(id);
       await loadSubjects(); // Refresh the list
+      _autoSync(); // Auto-sync to cloud
+      print('✅ Subject deleted and syncing to cloud...');
     } catch (error) {
       rethrow;
     }
