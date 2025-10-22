@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/quiz_provider.dart';
+import '../providers/subject_provider.dart';
+import '../providers/mcq_provider.dart';
+import '../providers/course_provider.dart';
 import '../services/notification_service.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
@@ -577,7 +580,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Stop background sync
                 BackgroundSyncService().stopBackgroundSync();
                 
-                // Logout from Supabase
+                // Clear all provider cache/state
+                print('🗑️ Clearing provider cache...');
+                ref.invalidate(subjectProvider);
+                ref.invalidate(quizProvider);
+                ref.invalidate(mcqQuizProvider);
+                ref.invalidate(courseProvider);
+                ref.invalidate(quizSettingsProvider);
+                print('✅ Provider cache cleared');
+                
+                // Logout from Supabase (also clears local database)
                 await AuthService().signOut();
                 
                 if (!context.mounted) return;
