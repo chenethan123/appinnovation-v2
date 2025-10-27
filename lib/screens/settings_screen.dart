@@ -585,7 +585,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ref.invalidate(subjectProvider);
                 ref.invalidate(quizProvider);
                 ref.invalidate(mcqQuizProvider);
-                ref.invalidate(courseProvider);
+                ref.invalidate(coursesProvider);
                 ref.invalidate(quizSettingsProvider);
                 print('✅ Provider cache cleared');
                 
