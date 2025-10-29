@@ -57,10 +57,17 @@ class _AuthScreenState extends State<AuthScreen> {
           );
           
           try {
-            // Download subjects and questions from cloud
-            await _syncService.downloadSubjects();
-            await _syncService.downloadQuestions();
-            print('✅ Cloud data downloaded successfully');
+            // CRITICAL: Clear local data first to prevent data mixing
+            await DatabaseHelper().clearAllData();
+            print('🗑️ Local data cleared');
+            
+            // Download and persist subjects from cloud
+            final subjects = await _syncService.downloadSubjectsAndPersist();
+            print('✅ ${subjects.length} subjects persisted');
+            
+            // Download and persist questions from cloud (using subject names for mapping)
+            await _syncService.downloadQuestionsAndPersist(subjects: subjects);
+            print('✅ Cloud data downloaded and persisted successfully');
             
             // Start background sync after successful login
             BackgroundSyncService().startBackgroundSync();

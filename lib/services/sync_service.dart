@@ -44,7 +44,7 @@ class SyncService {
     }
   }
   
-  /// Download subjects from cloud
+  /// Download subjects from cloud (returns list only, doesn't persist)
   Future<List<Subject>> downloadSubjects() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot download subjects: User not logged in');
@@ -86,6 +86,33 @@ class SyncService {
     }
   }
   
+  /// Download subjects from cloud AND persist to local database
+  Future<List<Subject>> downloadSubjectsAndPersist() async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot download subjects: User not logged in');
+      return [];
+    }
+    
+    try {
+      // Download from cloud
+      final cloudSubjects = await downloadSubjects();
+      
+      // Persist each subject to local database
+      print('💾 Persisting ${cloudSubjects.length} subjects to local DB...');
+      for (final subject in cloudSubjects) {
+        await _db.insertSubject(subject);
+      }
+      
+      // Return subjects with their new local IDs
+      final localSubjects = await _db.getAllSubjects();
+      print('✅ ${localSubjects.length} subjects persisted locally');
+      return localSubjects;
+    } catch (e) {
+      print('❌ Download and persist subjects error: $e');
+      rethrow;
+    }
+  }
+  
   /// Upload questions to cloud
   Future<void> uploadQuestions() async {
     if (!_authService.isLoggedIn) {
@@ -105,7 +132,8 @@ class SyncService {
         for (var question in questions) {
           await supabase.from('questions').upsert({
             'user_id': _authService.userId,
-            'subject_id': subject.id.toString(), // Store as string for now
+            'subject_id': subject.id.toString(), // Legacy field
+            'subject_name': subject.name, // ADD: Stable mapping by name
             'question_text': question.questionText,
             'options': question.options,
             'correct_answer': question.correctAnswer,
@@ -127,11 +155,11 @@ class SyncService {
     }
   }
   
-  /// Download questions from cloud
-  Future<void> downloadQuestions() async {
+  /// Download questions from cloud (doesn't persist, returns list)
+  Future<List<Question>> downloadQuestions() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot download questions: User not logged in');
-      return;
+      return [];
     }
     
     try {
@@ -142,19 +170,27 @@ class SyncService {
         .select()
         .eq('user_id', _authService.userId!);
       
-      int questionCount = 0;
+      // Get local subjects for mapping
+      final subjects = await _db.getAllSubjects();
+      final subjectsByName = { for (var s in subjects) s.name: s };
+      
+      final questions = <Question>[];
+      int skipped = 0;
       
       for (var data in response) {
-        // Find matching subject by name
-        final subjects = await _db.getAllSubjects();
-        final matchingSubject = subjects.firstWhere(
-          (s) => s.id.toString() == data['subject_id'],
-          orElse: () => subjects.first, // Fallback to first subject
-        );
+        // Map by subject_name (stable) instead of subject_id (fragile)
+        final subjectName = data['subject_name'] as String?;
+        final subject = subjectName != null ? subjectsByName[subjectName] : null;
+        
+        if (subject == null) {
+          print('⚠️ Skipping question - subject not found: $subjectName');
+          skipped++;
+          continue; // Skip questions for non-existent subjects
+        }
         
         final question = Question(
           id: 0, // Auto-assigned
-          subjectId: matchingSubject.id!,
+          subjectId: subject.id!,
           questionText: data['question_text'],
           options: List<String>.from(data['options'] ?? []),
           correctAnswer: data['correct_answer'],
@@ -167,13 +203,40 @@ class SyncService {
           sourceUrl: data['source_url'],
         );
         
-        await _db.insertQuestion(question);
-        questionCount++;
+        questions.add(question);
       }
       
-      print('✅ Downloaded $questionCount questions from cloud');
+      print('✅ Downloaded ${questions.length} questions from cloud');
+      if (skipped > 0) {
+        print('⚠️ Skipped $skipped questions (subject not found)');
+      }
+      return questions;
     } catch (e) {
       print('❌ Download questions error: $e');
+      rethrow;
+    }
+  }
+  
+  /// Download questions from cloud AND persist to local database
+  Future<void> downloadQuestionsAndPersist({required List<Subject> subjects}) async {
+    if (!_authService.isLoggedIn) {
+      print('⚠️ Cannot download questions: User not logged in');
+      return;
+    }
+    
+    try {
+      // Download questions from cloud
+      final questions = await downloadQuestions();
+      
+      // Persist each question to local database
+      print('💾 Persisting ${questions.length} questions to local DB...');
+      for (final question in questions) {
+        await _db.insertQuestion(question);
+      }
+      
+      print('✅ ${questions.length} questions persisted locally');
+    } catch (e) {
+      print('❌ Download and persist questions error: $e');
       rethrow;
     }
   }
