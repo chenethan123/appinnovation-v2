@@ -116,16 +116,39 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
     try {
       // Get subject from database to retrieve ID for deduplication
       final subjects = await _db.getSubjectByName(subject);
-      final subjectId = subjects?.id;
+      int subjectId;
       
-      if (subjectId == null) {
-        print('⚠️ Subject not found in database: $subject');
-        if (!mounted) return;
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Subject "$subject" not found.\n\nPlease add this subject first.',
+      if (subjects == null) {
+        // Subject doesn't exist - create it automatically
+        print('📝 Subject not found, creating: $subject');
+        final newSubject = Subject(
+          id: null,
+          name: subject,
+          description: 'Auto-created from course',
+          color: '#6366f1', // Default blue color
+          isActive: true,
+          totalQuestions: 0,
+          correctAnswers: 0,
+          difficultyWeight: 0.5,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
-        return;
+        
+        subjectId = await _db.insertSubject(newSubject);
+        print('✅ Subject created with ID: $subjectId');
+        
+        // Upload to cloud if sync enabled
+        if (ApiConfig.enableSync && AuthService().isLoggedIn) {
+          try {
+            await SyncService().uploadSubjects();
+            print('✅ New subject synced to cloud');
+          } catch (e) {
+            print('⚠️ Failed to sync new subject: $e');
+            // Continue anyway - local subject created
+          }
+        }
+      } else {
+        subjectId = subjects.id!;
       }
       
       _currentSubjectId = subjectId; // Track for logging
