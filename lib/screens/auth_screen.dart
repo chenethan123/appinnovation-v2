@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 import '../services/background_sync_service.dart';
+import '../database/database_helper.dart';
 import 'home_screen.dart';
 
 /// Authentication screen for login and signup
