@@ -116,25 +116,32 @@ class _SubjectsScreenState extends ConsumerState<SubjectsScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            // Use Column to prevent overflow on small screens
+            Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const SubjectSearchScreen(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.search),
-                  label: const Text('Browse AP Subjects'),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const SubjectSearchScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.search),
+                    label: const Text('Browse AP Subjects'),
+                  ),
                 ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: () => _showAddSubjectDialog(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Custom Subject'),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showAddSubjectDialog(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Custom Subject'),
+                  ),
                 ),
               ],
             ),

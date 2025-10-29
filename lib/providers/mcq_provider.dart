@@ -7,6 +7,8 @@ import '../models/quiz_session.dart';
 import '../services/ai_service.dart';
 import '../services/openai_service.dart';
 import '../services/openai_service_novel.dart';
+import '../services/auth_service.dart';
+import '../services/sync_service.dart';
 import '../config/api_config.dart';
 import '../database/database_helper.dart';
 import 'subject_provider.dart';

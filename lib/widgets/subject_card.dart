@@ -154,19 +154,22 @@ class SubjectCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    // Question count
-                    Text(
-                      '${subject.totalQuestions} questions',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                    const SizedBox(width: 8),
+                    // Question count - make flexible to prevent overflow
+                    Flexible(
+                      child: Text(
+                        '${subject.totalQuestions} q',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     // Active status
                     if (!subject.isActive)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                         decoration: BoxDecoration(
                           color: colorScheme.outline.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -175,6 +178,7 @@ class SubjectCard extends StatelessWidget {
                           'Inactive',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: colorScheme.outline,
+                            fontSize: 11,
                           ),
                         ),
                       ),

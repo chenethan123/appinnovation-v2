@@ -186,42 +186,38 @@ class _QuizTab extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
-                          trailing: SizedBox(
-                            width: 80,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.psychology,
-                                        size: 12,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.psychology,
+                                      size: 12,
+                                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      'AI',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
                                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                                       ),
-                                      const SizedBox(width: 3),
-                                      Text(
-                                        'AI',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.arrow_forward_ios, size: 16),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.arrow_forward_ios, size: 16),
+                            ],
                           ),
                           onTap: () {
                             // Navigate to full-screen loading view immediately
