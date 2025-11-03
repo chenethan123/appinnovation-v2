@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../database/database_helper.dart';
+import 'background_sync_service.dart';
 
 /// Authentication service for user login, signup, and session management
 /// Uses Supabase Auth for secure authentication
@@ -46,7 +47,12 @@ class AuthService {
   /// Logout current user and clear local data
   Future<void> signOut() async {
     try {
-      // Clear all local data first (prevent data leakage)
+      // CRITICAL: Stop background sync FIRST to prevent race conditions
+      // This prevents background sync from uploading empty data during logout
+      print('🛑 Stopping background sync...');
+      BackgroundSyncService().stopBackgroundSync();
+      
+      // Clear all local data (prevent data leakage)
       print('🗑️ Clearing local data...');
       await DatabaseHelper().clearAllData();
       

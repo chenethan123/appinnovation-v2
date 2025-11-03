@@ -28,20 +28,11 @@ void main() async {
   // Load default courses from JSON into database
   await CourseService().loadDefaultCourses();
   
-  // Auto-sync on launch if user is logged in
+  // Start background sync if user has persisted session
+  // Skip initial sync to avoid race conditions - background sync will run periodically
+  // Login screen handles initial sync after authentication
   if (ApiConfig.enableSync && AuthService().isLoggedIn) {
-    print('🔄 Auto-syncing on launch...');
-    SyncService().fullSync().then((result) {
-      if (result.success) {
-        print('✅ Launch sync complete: ${result.message}');
-      } else {
-        print('⚠️ Launch sync partial: ${result.message}');
-      }
-    }).catchError((e) {
-      print('❌ Launch sync error: $e');
-    });
-    
-    // Start background sync timer
+    print('✅ User session detected - starting background sync timer');
     BackgroundSyncService().startBackgroundSync();
   }
   

@@ -12,7 +12,7 @@ class SyncService {
   final _authService = AuthService();
   final _db = DatabaseHelper();
   
-  /// Upload subjects to cloud
+  /// Upload subjects to cloud with timestamp-based conflict resolution
   Future<void> uploadSubjects() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot upload subjects: User not logged in');
@@ -23,7 +23,31 @@ class SyncService {
       final subjects = await _db.getAllSubjects();
       print('📤 Uploading ${subjects.length} subjects...');
       
+      // Get existing cloud subjects with timestamps for conflict resolution
+      final cloudResponse = await supabase
+        .from('subjects')
+        .select('name, updated_at')
+        .eq('user_id', _authService.userId!);
+      
+      final cloudTimestamps = <String, DateTime>{};
+      for (var item in cloudResponse) {
+        final name = item['name'] as String;
+        final updatedAt = DateTime.tryParse(item['updated_at'] ?? '');
+        if (updatedAt != null) {
+          cloudTimestamps[name] = updatedAt;
+        }
+      }
+      
+      int uploaded = 0;
       for (var subject in subjects) {
+        // Check if cloud version is newer (conflict resolution)
+        final cloudTimestamp = cloudTimestamps[subject.name];
+        if (cloudTimestamp != null && 
+            subject.updatedAt.isBefore(cloudTimestamp)) {
+          print('⏭️ Skipping ${subject.name} - cloud version is newer');
+          continue;
+        }
+        
         await supabase.from('subjects').upsert({
           'user_id': _authService.userId,
           'name': subject.name,
@@ -33,11 +57,12 @@ class SyncService {
           'total_questions': subject.totalQuestions,
           'correct_answers': subject.correctAnswers,
           'difficulty_weight': subject.difficultyWeight,
-          'updated_at': DateTime.now().toIso8601String(),
+          'updated_at': subject.updatedAt.toIso8601String(), // Use actual timestamp
         }, onConflict: 'user_id,name');
+        uploaded++;
       }
       
-      print('✅ ${subjects.length} subjects uploaded to cloud');
+      print('✅ $uploaded/${subjects.length} subjects uploaded to cloud');
     } catch (e) {
       print('❌ Upload subjects error: $e');
       rethrow;
@@ -254,7 +279,8 @@ class SyncService {
     return;
   }
   
-  /// Full bi-directional sync (upload + download)
+  /// Full bi-directional sync (download first, then upload)
+  /// Cloud is source of truth - download and persist first, then upload local changes
   Future<SyncResult> fullSync() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot sync: User not logged in');
@@ -264,14 +290,18 @@ class SyncService {
     try {
       print('🔄 Starting full sync...');
       
-      // Upload local changes first
+      // CRITICAL FIX: Download and persist FIRST (cloud is source of truth)
+      // This ensures local DB always has latest cloud data
+      final cloudSubjects = await downloadSubjectsAndPersist();
+      await downloadQuestionsAndPersist(subjects: cloudSubjects);
+      print('✅ Cloud data downloaded and persisted: ${cloudSubjects.length} subjects');
+      
+      // Then upload any local changes (with timestamp conflict resolution)
+      // uploadSubjects() will skip if cloud version is newer
       await uploadSubjects();
       await uploadQuestions();
       await uploadQuizSessions();
-      
-      // Download latest from cloud
-      final cloudSubjects = await downloadSubjects();
-      await downloadQuestions();
+      print('✅ Local changes uploaded to cloud');
       
       print('✅ Full sync completed successfully!');
       return SyncResult(
