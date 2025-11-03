@@ -12,10 +12,24 @@ class SyncService {
   final _authService = AuthService();
   final _db = DatabaseHelper();
   
+  /// Restore mode flag - prevents auto-sync during login/restore to avoid data contamination
+  bool _restoreMode = false;
+  bool get isRestoreMode => _restoreMode;
+  void setRestoreMode(bool value) {
+    _restoreMode = value;
+    print(value ? '🔒 Restore mode ENABLED - auto-sync disabled' : '🔓 Restore mode DISABLED - auto-sync enabled');
+  }
+  
   /// Upload subjects to cloud with timestamp-based conflict resolution
   Future<void> uploadSubjects() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot upload subjects: User not logged in');
+      return;
+    }
+    
+    // CRITICAL: Don't upload during restore mode to prevent data contamination
+    if (_restoreMode) {
+      print('⏭️ Skipping upload subjects - restore mode active');
       return;
     }
     
@@ -142,6 +156,12 @@ class SyncService {
   Future<void> uploadQuestions() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot upload questions: User not logged in');
+      return;
+    }
+    
+    // CRITICAL: Don't upload during restore mode to prevent data contamination
+    if (_restoreMode) {
+      print('⏭️ Skipping upload questions - restore mode active');
       return;
     }
     

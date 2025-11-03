@@ -58,7 +58,11 @@ class _AuthScreenState extends State<AuthScreen> {
           );
           
           try {
-            // CRITICAL: Clear local data first to prevent data mixing
+            // CRITICAL: Enable restore mode to prevent auto-sync during restore
+            // This prevents accidental uploads of stale/empty data
+            _syncService.setRestoreMode(true);
+            
+            // Clear local data first to prevent data mixing
             await DatabaseHelper().clearAllData();
             print('🗑️ Local data cleared');
             
@@ -70,10 +74,15 @@ class _AuthScreenState extends State<AuthScreen> {
             await _syncService.downloadQuestionsAndPersist(subjects: subjects);
             print('✅ Cloud data downloaded and persisted successfully');
             
+            // CRITICAL: Disable restore mode BEFORE starting background sync
+            _syncService.setRestoreMode(false);
+            
             // Start background sync after successful login
             BackgroundSyncService().startBackgroundSync();
           } catch (e) {
             print('❌ Download error: $e');
+            // Make sure to disable restore mode even on error
+            _syncService.setRestoreMode(false);
           }
         }
       } else {
