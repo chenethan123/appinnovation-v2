@@ -9,6 +9,11 @@ import 'auth_service.dart';
 /// Sync service for uploading/downloading data between local SQLite and Supabase cloud
 /// Implements offline-first architecture with bi-directional sync
 class SyncService {
+  // Singleton pattern to ensure restore mode state is shared
+  static final SyncService _instance = SyncService._internal();
+  factory SyncService() => _instance;
+  SyncService._internal();
+  
   final _authService = AuthService();
   final _db = DatabaseHelper();
   
