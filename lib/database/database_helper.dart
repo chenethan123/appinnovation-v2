@@ -327,7 +327,13 @@ class DatabaseHelper {
   // Subject CRUD operations
   Future<int> insertSubject(Subject subject) async {
     final db = await database;
-    return await db.insert('subjects', subject.toMap());
+    // Use INSERT OR REPLACE to handle subjects downloaded from cloud
+    // This prevents UNIQUE constraint failures when cloud has duplicate/invalid IDs
+    return await db.insert(
+      'subjects', 
+      subject.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Subject>> getAllSubjects() async {
@@ -391,7 +397,13 @@ class DatabaseHelper {
   // Question CRUD operations
   Future<int> insertQuestion(Question question) async {
     final db = await database;
-    return await db.insert('questions', question.toMap());
+    // Use INSERT OR REPLACE to handle questions downloaded from cloud
+    // This prevents UNIQUE constraint failures when cloud has duplicate/invalid IDs
+    return await db.insert(
+      'questions', 
+      question.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Question>> getQuestionsBySubject(int subjectId) async {
