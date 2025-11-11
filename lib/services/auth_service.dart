@@ -59,6 +59,9 @@ class AuthService {
       // Then sign out from Supabase
       await supabase.auth.signOut();
       print('✅ User logged out and local data cleared');
+      
+      // CRITICAL: Reopen database for offline mode (switches to offline DB file)
+      await DatabaseHelper().reopenForUser();
     } catch (e) {
       print('❌ Sign out error: $e');
       rethrow;

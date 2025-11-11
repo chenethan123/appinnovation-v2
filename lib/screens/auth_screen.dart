@@ -51,6 +51,9 @@ class _AuthScreenState extends State<AuthScreen> {
           // Wait a moment for auth to fully complete
           await Future.delayed(const Duration(milliseconds: 500));
           
+          // CRITICAL: Reopen database for this user (per-user DB file)
+          await DatabaseHelper().reopenForUser();
+          
           // Download cloud data after login (replaces any local data)
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -61,10 +64,6 @@ class _AuthScreenState extends State<AuthScreen> {
             // CRITICAL: Enable restore mode to prevent auto-sync during restore
             // This prevents accidental uploads of stale/empty data
             _syncService.setRestoreMode(true);
-            
-            // Clear local data first to prevent data mixing
-            await DatabaseHelper().clearAllData();
-            print('🗑️ Local data cleared');
             
             // Download and persist subjects from cloud
             final subjects = await _syncService.downloadSubjectsAndPersist();
@@ -95,6 +94,9 @@ class _AuthScreenState extends State<AuthScreen> {
         if (response.user != null) {
           // Wait a moment for auth to fully complete
           await Future.delayed(const Duration(milliseconds: 500));
+          
+          // CRITICAL: Reopen database for this user (per-user DB file)
+          await DatabaseHelper().reopenForUser();
           
           // Upload local data after signup
           if (!mounted) return;

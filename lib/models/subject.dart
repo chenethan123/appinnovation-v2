@@ -1,5 +1,6 @@
 class Subject {
   final int? id;
+  final String? userId; // User ID for cloud sync and multi-user support
   final String name;
   final String description;
   final String color; // Hex color code
@@ -12,6 +13,7 @@ class Subject {
 
   Subject({
     this.id,
+    this.userId,
     required this.name,
     required this.description,
     required this.color,
@@ -38,6 +40,7 @@ class Subject {
 
   Subject copyWith({
     int? id,
+    String? userId,
     String? name,
     String? description,
     String? color,
@@ -50,6 +53,7 @@ class Subject {
   }) {
     return Subject(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       description: description ?? this.description,
       color: color ?? this.color,
@@ -65,6 +69,7 @@ class Subject {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'user_id': userId,
       'name': name,
       'description': description,
       'color': color,
@@ -80,6 +85,7 @@ class Subject {
   factory Subject.fromMap(Map<String, dynamic> map) {
     return Subject(
       id: map['id']?.toInt(),
+      userId: map['user_id']?.toString(),
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       color: map['color'] ?? '#2196F3',

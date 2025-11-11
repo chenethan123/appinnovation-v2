@@ -123,6 +123,7 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
         print('📝 Subject not found, creating: $subject');
         final newSubject = Subject(
           id: null,
+          userId: AuthService().userId, // Associate with current user
           name: subject,
           description: 'Auto-created from course',
           color: '#6366f1', // Default blue color

@@ -15,7 +15,8 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
   
   // Auto-sync to cloud (non-blocking)
   void _autoSync() {
-    if (_authService.isLoggedIn) {
+    // CRITICAL: Don't auto-sync during restore mode or when not logged in
+    if (_authService.isLoggedIn && !_syncService.isRestoreMode) {
       // Run sync in background without blocking UI
       _syncService.uploadSubjects().catchError((e) {
         print('⚠️ Background sync failed: $e');

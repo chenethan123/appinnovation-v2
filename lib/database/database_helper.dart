@@ -6,13 +6,14 @@ import '../models/question.dart';
 import '../models/quiz_session.dart';
 import '../models/course.dart';
 import '../models/unit.dart';
+import '../services/auth_service.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
 
-  static const int _version = 9;
+  static const int _version = 10; // Increment for user_id column
   static Database? _database;
 
   Future<Database> get database async {
@@ -20,9 +21,25 @@ class DatabaseHelper {
     return _database!;
   }
 
+  /// Get database filename based on logged-in user (per-user isolation)
+  String _dbFileName() {
+    final userId = AuthService().userId;
+    return userId == null ? 'formula_quizzer_offline.db' : 'formula_quizzer_$userId.db';
+  }
+
+  /// Reopen database for current user (call on login/logout)
+  Future<void> reopenForUser() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+    _database = await _initDatabase();
+    print('🔄 Database reopened for user: ${AuthService().userId ?? "offline"}');
+  }
+
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'formula_quizzer.db');
+    final path = join(dbPath, _dbFileName());
 
     return await openDatabase(
       path,
@@ -33,10 +50,11 @@ class DatabaseHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create subjects table
+    // Create subjects table with user_id for cloud sync
     await db.execute('''
       CREATE TABLE subjects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
         name TEXT NOT NULL UNIQUE,
         description TEXT NOT NULL,
         color TEXT NOT NULL,

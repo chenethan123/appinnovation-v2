@@ -131,6 +131,7 @@ class SyncService {
   }
   
   /// Download subjects from cloud AND persist to local database
+  /// Clears local subjects first - cloud is source of truth
   Future<List<Subject>> downloadSubjectsAndPersist() async {
     if (!_authService.isLoggedIn) {
       print('⚠️ Cannot download subjects: User not logged in');
@@ -140,6 +141,11 @@ class SyncService {
     try {
       // Download from cloud
       final cloudSubjects = await downloadSubjects();
+      
+      // Clear local subjects first (cloud is source of truth)
+      final db = await _db.database;
+      await db.delete('subjects');
+      print('🗑️ Local subjects cleared');
       
       // Persist each subject to local database
       print('💾 Persisting ${cloudSubjects.length} subjects to local DB...');
@@ -182,8 +188,8 @@ class SyncService {
         for (var question in questions) {
           await supabase.from('questions').upsert({
             'user_id': _authService.userId,
-            'subject_id': subject.id.toString(), // Legacy field
-            'subject_name': subject.name, // ADD: Stable mapping by name
+            // Remove 'subject_id' mapping - local integer ID is invalid for cloud UUID column
+            'subject_name': subject.name, // Use stable name-based mapping
             'question_text': question.questionText,
             'options': question.options,
             'correct_answer': question.correctAnswer,
@@ -315,18 +321,19 @@ class SyncService {
     try {
       print('🔄 Starting full sync...');
       
-      // CRITICAL FIX: Download and persist FIRST (cloud is source of truth)
-      // This ensures local DB always has latest cloud data
-      final cloudSubjects = await downloadSubjectsAndPersist();
-      await downloadQuestionsAndPersist(subjects: cloudSubjects);
+      // Download from cloud (always do this to stay in sync)
+      final cloudSubjects = await downloadSubjects();
       print('✅ Cloud data downloaded and persisted: ${cloudSubjects.length} subjects');
       
-      // Then upload any local changes (with timestamp conflict resolution)
-      // uploadSubjects() will skip if cloud version is newer
-      await uploadSubjects();
-      await uploadQuestions();
-      await uploadQuizSessions();
-      print('✅ Local changes uploaded to cloud');
+      // Upload only if NOT in restore mode (prevent contamination)
+      if (!_restoreMode) {
+        await uploadSubjects();
+        await uploadQuestions();
+        await uploadQuizSessions();
+        print('✅ Local changes uploaded to cloud');
+      } else {
+        print('⏭️ Skipping upload - restore mode active');
+      }
       
       print('✅ Full sync completed successfully!');
       return SyncResult(
