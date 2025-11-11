@@ -76,6 +76,7 @@ class SyncService {
           'total_questions': subject.totalQuestions,
           'correct_answers': subject.correctAnswers,
           'difficulty_weight': subject.difficultyWeight,
+          'created_at': subject.createdAt.toIso8601String(), // Preserve creation timestamp
           'updated_at': subject.updatedAt.toIso8601String(), // Use actual timestamp
         }, onConflict: 'user_id,name');
         uploaded++;
@@ -108,6 +109,7 @@ class SyncService {
       for (var data in response) {
         final subject = Subject(
           id: 0, // Will be auto-assigned by local DB
+          userId: data['user_id']?.toString(), // CRITICAL: Preserve user_id from cloud
           name: data['name'] ?? '',
           description: data['description'] ?? '',
           color: data['color'] ?? '#6366f1',
