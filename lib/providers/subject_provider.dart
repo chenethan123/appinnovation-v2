@@ -1,85 +1,114 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/subject.dart';
-import '../database/database_helper.dart';
+import '../services/cloud_data_service.dart';
 import '../services/auth_service.dart';
-import '../services/sync_service.dart';
 
 class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
   SubjectNotifier() : super(const AsyncValue.loading()) {
     loadSubjects();
   }
 
-  final DatabaseHelper _db = DatabaseHelper();
+  final CloudDataService _cloudService = CloudDataService();
   final AuthService _authService = AuthService();
-  final SyncService _syncService = SyncService();
-  
-  // Auto-sync to cloud (non-blocking)
-  void _autoSync() {
-    // CRITICAL: Don't auto-sync during restore mode or when not logged in
-    if (_authService.isLoggedIn && !_syncService.isRestoreMode) {
-      // Run sync in background without blocking UI
-      _syncService.uploadSubjects().catchError((e) {
-        print('⚠️ Background sync failed: $e');
-      });
-    }
-  }
 
   Future<void> loadSubjects() async {
     try {
       state = const AsyncValue.loading();
-      final subjects = await _db.getAllSubjects();
+      
+      // Wait for auth to be ready (max 3 seconds)
+      int attempts = 0;
+      while ((_authService.userId == null || !_authService.isLoggedIn) && attempts < 6) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        attempts++;
+      }
+      
+      // CLOUD-FIRST: Fetch from Supabase with automatic user_id filtering
+      final subjects = await _cloudService.getAllSubjects();
       state = AsyncValue.data(subjects);
+      
+      print('📊 Loaded ${subjects.length} subjects for user ${_authService.userId?.substring(0, 8) ?? "unknown"}');
     } catch (error, stackTrace) {
+      print('❌ Error loading subjects: $error');
       state = AsyncValue.error(error, stackTrace);
     }
   }
 
   Future<void> addSubject(Subject subject) async {
     try {
-      await _db.insertSubject(subject);
-      await loadSubjects(); // Refresh the list
-      _autoSync(); // Auto-sync to cloud
-      print('✅ Subject added and syncing to cloud...');
+      if (!_authService.isLoggedIn) {
+        throw Exception('Must be logged in to add subjects');
+      }
+      
+      // CLOUD-FIRST: Create in Supabase with automatic user_id validation
+      await _cloudService.createSubject(subject);
+      await loadSubjects(); // Refresh from cloud
+      print('✅ Subject added to cloud with user_id: ${_authService.userId}');
     } catch (error) {
-      // Handle error - could emit error state or show notification
+      final errorMsg = error.toString();
+      
+      // Handle duplicate subject error with friendly message
+      if (errorMsg.contains('duplicate key') || errorMsg.contains('unique constraint')) {
+        print('⚠️  Subject "${subject.name}" already exists');
+        throw Exception('You already have a subject named "${subject.name}"');
+      }
+      
+      print('❌ Error adding subject: $error');
       rethrow;
     }
   }
 
   Future<void> updateSubject(Subject subject) async {
     try {
-      await _db.updateSubject(subject);
-      await loadSubjects(); // Refresh the list
-      _autoSync(); // Auto-sync to cloud
-      print('✅ Subject updated and syncing to cloud...');
+      if (!_authService.isLoggedIn) {
+        throw Exception('Must be logged in to update subjects');
+      }
+      
+      // CLOUD-FIRST: Update in Supabase with automatic user_id validation
+      await _cloudService.updateSubject(subject);
+      await loadSubjects(); // Refresh from cloud
+      print('✅ Subject updated in cloud');
     } catch (error) {
+      print('❌ Error updating subject: $error');
       rethrow;
     }
   }
 
   Future<void> deleteSubject(int id) async {
     try {
-      await _db.deleteSubject(id);
-      await loadSubjects(); // Refresh the list
-      _autoSync(); // Auto-sync to cloud
-      print('✅ Subject deleted and syncing to cloud...');
+      if (!_authService.isLoggedIn) {
+        throw Exception('Must be logged in to delete subjects');
+      }
+      
+      // CLOUD-FIRST: Delete from Supabase with automatic user_id validation
+      await _cloudService.deleteSubject(id);
+      await loadSubjects(); // Refresh from cloud
+      print('✅ Subject deleted from cloud');
     } catch (error) {
+      print('❌ Error deleting subject: $error');
       rethrow;
     }
   }
 
   Future<void> toggleSubjectActive(int id) async {
     try {
-      final subject = await _db.getSubjectById(id);
+      if (!_authService.isLoggedIn) {
+        throw Exception('Must be logged in to toggle subject');
+      }
+      
+      // Find subject in current state
+      final subjects = state.value ?? [];
+      final subject = subjects.where((s) => s.id == id).firstOrNull;
+      
       if (subject != null) {
         final updatedSubject = subject.copyWith(
           isActive: !subject.isActive,
           updatedAt: DateTime.now(),
         );
-        await _db.updateSubject(updatedSubject);
+        await _cloudService.updateSubject(updatedSubject);
         await loadSubjects();
       }
     } catch (error) {
+      print('❌ Error toggling subject: $error');
       rethrow;
     }
   }

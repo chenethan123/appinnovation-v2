@@ -4,6 +4,7 @@ import '../models/subject.dart';
 import '../models/course.dart';
 import '../providers/subject_provider.dart';
 import '../providers/course_provider.dart';
+import '../services/auth_service.dart';
 
 class SubjectSearchScreen extends ConsumerStatefulWidget {
   const SubjectSearchScreen({super.key});
@@ -145,6 +146,7 @@ class _SubjectSearchScreenState extends ConsumerState<SubjectSearchScreen> {
       };
       
       final subject = Subject(
+        userId: AuthService().userId, // CRITICAL: Associate with current user
         name: course.subjectName,
         description: course.description.isNotEmpty 
             ? course.description 

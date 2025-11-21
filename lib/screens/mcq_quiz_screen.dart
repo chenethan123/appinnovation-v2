@@ -64,7 +64,7 @@ class _MCQQuizScreenState extends ConsumerState<MCQQuizScreen> {
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('Generating question with ChatGPT...'),
+            Text('Generating question for you...'),
             SizedBox(height: 8),
             Text(
               'This may take a few seconds',

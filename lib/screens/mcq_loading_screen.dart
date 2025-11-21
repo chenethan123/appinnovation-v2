@@ -79,31 +79,43 @@ class _MCQLoadingScreenState extends ConsumerState<MCQLoadingScreen> {
       if (!mounted) return;
 
       final errorString = error.toString();
+      print('❌ MCQ generation error (attempt $_retryAttempt): $errorString');
       
-      // Check for rate limit or temporary errors
-      if (errorString.contains('429') || errorString.contains('busy')) {
-        // Auto-retry for rate limits
-        if (_retryAttempt < 3) {
-          setState(() {
-            _isRetrying = true;
-            _errorMessage = 'AI is busy—retrying...';
-          });
-          
-          // Wait before retry with exponential backoff
-          await Future.delayed(Duration(seconds: 2 * _retryAttempt));
-          
-          if (mounted) {
-            _generateQuestion();
-          }
-          return;
+      // Auto-retry for ALL errors up to max attempts
+      if (_retryAttempt < 3) {
+        setState(() {
+          _isRetrying = true;
+          _errorMessage = null; // Clear error, show loading
+        });
+        
+        // Wait before retry with exponential backoff
+        final waitSeconds = 2 * _retryAttempt;
+        print('⏳ Waiting ${waitSeconds}s before retry...');
+        await Future.delayed(Duration(seconds: waitSeconds));
+        
+        if (mounted) {
+          _generateQuestion();
         }
+        return;
       }
       
-      // Show error after retries exhausted or for other errors
-      setState(() {
-        _isRetrying = false;
-        _errorMessage = _getFriendlyErrorMessage(errorString);
-      });
+      // Max retries exhausted - auto-navigate back
+      print('❌ Max retries exhausted. Navigating back...');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_getFriendlyErrorMessage(errorString)),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        
+        // Auto-navigate back after brief delay
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
     }
   }
 
@@ -180,7 +192,7 @@ class _MCQLoadingScreenState extends ConsumerState<MCQLoadingScreen> {
                   Text(
                     _isRetrying
                       ? 'Attempt ${_retryAttempt} of 3'
-                      : 'Creating a fresh ChatGPT question for ${widget.subjectName}',
+                      : 'Creating a fresh AI question for ${widget.subjectName}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -197,31 +209,8 @@ class _MCQLoadingScreenState extends ConsumerState<MCQLoadingScreen> {
                 
                 const SizedBox(height: 40),
                 
-                // Action buttons
-                if (_errorMessage != null)
-                  Column(
-                    children: [
-                      FilledButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _retryAttempt = 0;
-                            _errorMessage = null;
-                          });
-                          _generateQuestion();
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Try Again'),
-                      ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Go Back'),
-                      ),
-                    ],
-                  )
-                else if (_isRetrying)
+                // Cancel button only during loading/retry
+                if (_errorMessage == null)
                   OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).pop();

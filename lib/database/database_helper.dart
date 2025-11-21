@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/subject.dart';
@@ -35,11 +37,53 @@ class DatabaseHelper {
     }
     _database = await _initDatabase();
     print('🔄 Database reopened for user: ${AuthService().userId ?? "offline"}');
+    
+    // CRITICAL: Load courses for new user databases
+    // This ensures all users have access to the course catalog
+    try {
+      await _loadCoursesIfNeeded();
+    } catch (e) {
+      print('⚠️ Error loading courses: $e');
+    }
+  }
+  
+  /// Load courses if database doesn't have any
+  Future<void> _loadCoursesIfNeeded() async {
+    final hasData = await hasCoursesData();
+    if (!hasData) {
+      print('📚 New database detected - loading course catalog...');
+      // Import courses using CourseService
+      try {
+        // Import courses from JSON
+        await _loadCoursesFromJson();
+      } catch (e) {
+        print('❌ Error loading courses: $e');
+      }
+    }
+  }
+  
+  /// Load courses from JSON (internal method)
+  Future<void> _loadCoursesFromJson() async {
+    try {
+      final String jsonString = await rootBundle.loadString('assets/courses.json');
+      final Map<String, dynamic> jsonData = json.decode(jsonString);
+      final List<dynamic> coursesJson = jsonData['courses'] as List<dynamic>;
+      final List<Course> courses = coursesJson
+          .map((json) => Course.fromJson(json as Map<String, dynamic>))
+          .toList();
+      await bulkInsertCourses(courses);
+      print('✅ Loaded ${courses.length} courses into user database');
+    } catch (e) {
+      print('❌ Error loading courses from JSON: $e');
+      rethrow;
+    }
   }
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, _dbFileName());
+    
+    print('📁 Local database path: $path');
 
     return await openDatabase(
       path,

@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 import '../services/background_sync_service.dart';
+import '../services/course_service.dart';
 import '../database/database_helper.dart';
 import 'home_screen.dart';
 
@@ -54,6 +55,15 @@ class _AuthScreenState extends State<AuthScreen> {
           // CRITICAL: Reopen database for this user (per-user DB file)
           await DatabaseHelper().reopenForUser();
           
+          // CRITICAL: Load course catalog for new users
+          // This ensures all users have access to the same course library
+          try {
+            await CourseService().loadDefaultCourses();
+            print('✅ Course catalog loaded');
+          } catch (e) {
+            print('⚠️ Error loading courses: $e');
+          }
+          
           // Download cloud data after login (replaces any local data)
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -72,6 +82,12 @@ class _AuthScreenState extends State<AuthScreen> {
             // Download and persist questions from cloud (using subject names for mapping)
             await _syncService.downloadQuestionsAndPersist(subjects: subjects);
             print('✅ Cloud data downloaded and persisted successfully');
+            
+            // CRITICAL: Refresh subject provider after download
+            if (mounted) {
+              ref.invalidate(subjectProvider);
+              print('🔄 Subject provider refreshed after login');
+            }
             
             // CRITICAL: Disable restore mode BEFORE starting background sync
             _syncService.setRestoreMode(false);
@@ -98,6 +114,15 @@ class _AuthScreenState extends State<AuthScreen> {
           // CRITICAL: Reopen database for this user (per-user DB file)
           await DatabaseHelper().reopenForUser();
           
+          // CRITICAL: Load course catalog for new users
+          // This ensures all users have access to the same course library
+          try {
+            await CourseService().loadDefaultCourses();
+            print('✅ Course catalog loaded for new user');
+          } catch (e) {
+            print('⚠️ Error loading courses: $e');
+          }
+          
           // Upload local data after signup
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -108,6 +133,12 @@ class _AuthScreenState extends State<AuthScreen> {
             await _syncService.uploadSubjects();
             await _syncService.uploadQuestions();
             print('✅ Initial data upload complete');
+            
+            // CRITICAL: Refresh subject provider after signup
+            if (mounted) {
+              ref.invalidate(subjectProvider);
+              print('🔄 Subject provider refreshed after signup');
+            }
             
             // Start background sync after successful signup
             BackgroundSyncService().startBackgroundSync();

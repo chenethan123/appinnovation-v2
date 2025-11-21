@@ -1,93 +1,161 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../main.dart';
 import '../models/course.dart';
-import '../database/database_helper.dart';
+import 'auth_service.dart';
 
 class CourseService {
-  final DatabaseHelper _db = DatabaseHelper();
+  final _authService = AuthService();
 
-  /// Load courses from JSON file and import into database
-  Future<void> loadDefaultCourses() async {
-    try {
-      // Check if courses already loaded
-      final hasData = await _db.hasCoursesData();
-      if (hasData) {
-        print('✅ Courses already loaded in database');
-        return;
-      }
-
-      print('📚 Loading default courses from JSON...');
-      
-      // Load JSON file from assets
-      final String jsonString = await rootBundle.loadString('assets/courses.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-      
-      // Parse courses
-      final List<dynamic> coursesJson = jsonData['courses'] as List<dynamic>;
-      final List<Course> courses = coursesJson
-          .map((json) => Course.fromJson(json as Map<String, dynamic>))
-          .toList();
-      
-      // Bulk insert into database
-      await _db.bulkInsertCourses(courses);
-      
-      print('✅ Loaded ${courses.length} default courses into database');
-    } catch (e) {
-      print('❌ Error loading default courses: $e');
-      // Don't throw - app should work even if course loading fails
-    }
+  /// Load courses from Supabase course_catalog (no longer needed - data already in cloud)
+  Future<void> loadDefaultCourses({bool forceReload = false}) async {
+    // This method kept for backwards compatibility but does nothing
+    // Course catalog is now in Supabase and loaded on-demand
+    print('✅ Course catalog loaded from cloud on-demand');
   }
 
-  /// Get all courses
+  /// Get all courses from Supabase course_catalog
   Future<List<Course>> getAllCourses() async {
-    return await _db.getAllCourses();
+    try {
+      if (!_authService.isLoggedIn) {
+        print('⚠️ Not logged in - cannot fetch courses');
+        return [];
+      }
+
+      final response = await supabase
+        .from('course_catalog')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+
+      final courses = (response as List).map((json) => Course(
+        id: json['id'].hashCode.abs(), // Convert UUID to int for compatibility
+        courseId: json['course_id'] as String,
+        subjectName: json['subject_name'] as String,
+        category: json['category'] as String,
+        description: json['description'] as String,
+        isCustom: false,
+      )).toList();
+
+      print('✅ Fetched ${courses.length} courses from Supabase');
+      return courses;
+    } catch (e) {
+      print('❌ Error fetching courses from Supabase: $e');
+      return [];
+    }
   }
 
   /// Search courses by query
   Future<List<Course>> searchCourses(String query) async {
     if (query.isEmpty) {
-      return await _db.getAllCourses();
+      return await getAllCourses();
     }
-    return await _db.searchCourses(query);
+    
+    try {
+      if (!_authService.isLoggedIn) {
+        print('⚠️ Not logged in - cannot search courses');
+        return [];
+      }
+
+      final response = await supabase
+        .from('course_catalog')
+        .select('*')
+        .eq('is_active', true)
+        .or('course_id.ilike.%$query%,subject_name.ilike.%$query%')
+        .order('display_order');
+
+      final courses = (response as List).map((json) => Course(
+        id: json['id'].hashCode.abs(),
+        courseId: json['course_id'] as String,
+        subjectName: json['subject_name'] as String,
+        category: json['category'] as String,
+        description: json['description'] as String,
+        isCustom: false,
+      )).toList();
+
+      return courses;
+    } catch (e) {
+      print('❌ Error searching courses: $e');
+      return [];
+    }
   }
 
   /// Get courses by category
   Future<List<Course>> getCoursesByCategory(String category) async {
-    return await _db.getCoursesByCategory(category);
+    try {
+      if (!_authService.isLoggedIn) {
+        print('⚠️ Not logged in - cannot fetch courses');
+        return [];
+      }
+
+      final response = await supabase
+        .from('course_catalog')
+        .select('*')
+        .eq('is_active', true)
+        .eq('category', category)
+        .order('display_order');
+
+      final courses = (response as List).map((json) => Course(
+        id: json['id'].hashCode.abs(),
+        courseId: json['course_id'] as String,
+        subjectName: json['subject_name'] as String,
+        category: json['category'] as String,
+        description: json['description'] as String,
+        isCustom: false,
+      )).toList();
+
+      return courses;
+    } catch (e) {
+      print('❌ Error fetching courses by category: $e');
+      return [];
+    }
   }
 
-  /// Add custom course
+  /// Add custom course (not supported with cloud catalog)
   Future<int> addCustomCourse({
     required String courseId,
     required String subjectName,
     required String category,
     String description = '',
   }) async {
-    final course = Course(
-      courseId: courseId,
-      subjectName: subjectName,
-      category: category,
-      description: description,
-      isCustom: true,
-    );
-    return await _db.insertCourse(course);
+    print('⚠️ Custom courses not supported with cloud course_catalog');
+    return 0;
   }
 
-  /// Update course
+  /// Update course (not supported with cloud catalog)
   Future<int> updateCourse(Course course) async {
-    return await _db.updateCourse(course);
+    print('⚠️ Course updates not supported - managed in Supabase');
+    return 0;
   }
 
-  /// Delete course
+  /// Delete course (not supported with cloud catalog)
   Future<int> deleteCourse(int id) async {
-    return await _db.deleteCourse(id);
+    print('⚠️ Course deletion not supported - managed in Supabase');
+    return 0;
   }
 
-  /// Get available categories
+  /// Get available categories from Supabase
   Future<List<String>> getCategories() async {
-    final courses = await _db.getAllCourses();
-    final categories = courses.map((c) => c.category).toSet().toList();
-    categories.sort();
-    return categories;
+    try {
+      if (!_authService.isLoggedIn) {
+        print('⚠️ Not logged in - cannot fetch categories');
+        return [];
+      }
+
+      final response = await supabase
+        .from('course_catalog')
+        .select('category')
+        .eq('is_active', true);
+
+      final categories = (response as List)
+        .map((json) => json['category'] as String)
+        .toSet()
+        .toList();
+      
+      categories.sort();
+      return categories;
+    } catch (e) {
+      print('❌ Error fetching categories: $e');
+      return [];
+    }
   }
 }

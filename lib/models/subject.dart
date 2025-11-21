@@ -83,18 +83,37 @@ class Subject {
   }
 
   factory Subject.fromMap(Map<String, dynamic> map) {
+    // Handle both UUID (from Supabase) and integer (from local SQLite)
+    int? idValue;
+    if (map['id'] != null) {
+      if (map['id'] is int) {
+        idValue = map['id'];
+      } else if (map['id'] is String) {
+        // Convert UUID string to integer hash for compatibility
+        idValue = map['id'].hashCode.abs();
+      }
+    }
+    
     return Subject(
-      id: map['id']?.toInt(),
+      id: idValue,
       userId: map['user_id']?.toString(),
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       color: map['color'] ?? '#2196F3',
       createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(map['updated_at'] ?? '') ?? DateTime.now(),
-      isActive: (map['is_active'] ?? 1) == 1,
-      totalQuestions: map['total_questions']?.toInt() ?? 0,
-      correctAnswers: map['correct_answers']?.toInt() ?? 0,
-      difficultyWeight: (map['difficulty_weight'] ?? 0.5).toDouble(),
+      isActive: (map['is_active'] is bool) 
+          ? map['is_active'] 
+          : (map['is_active'] ?? 1) == 1,
+      totalQuestions: (map['total_questions'] is int) 
+          ? map['total_questions'] 
+          : (map['total_questions']?.toInt() ?? 0),
+      correctAnswers: (map['correct_answers'] is int)
+          ? map['correct_answers']
+          : (map['correct_answers']?.toInt() ?? 0),
+      difficultyWeight: (map['difficulty_weight'] is double)
+          ? map['difficulty_weight']
+          : ((map['difficulty_weight'] ?? 0.5).toDouble()),
     );
   }
 

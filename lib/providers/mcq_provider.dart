@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 import '../config/api_config.dart';
 import '../database/database_helper.dart';
+import '../services/cloud_data_service.dart';
 import 'subject_provider.dart';
 
 /// State for the MCQ quiz session
@@ -84,6 +85,7 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
   final OpenAIService _openAIService = OpenAIService();
   final OpenAIServiceNovel _novelService = OpenAIServiceNovel();
   final DatabaseHelper _db = DatabaseHelper();
+  final CloudDataService _cloudService = CloudDataService();
   final Ref _ref;
   Timer? _quizTimer;
   final Random _random = Random();
@@ -135,18 +137,14 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
           updatedAt: DateTime.now(),
         );
         
-        subjectId = await _db.insertSubject(newSubject);
-        print('✅ Subject created with ID: $subjectId');
-        
-        // Upload to cloud if sync enabled
-        if (ApiConfig.enableSync && AuthService().isLoggedIn) {
-          try {
-            await SyncService().uploadSubjects();
-            print('✅ New subject synced to cloud');
-          } catch (e) {
-            print('⚠️ Failed to sync new subject: $e');
-            // Continue anyway - local subject created
-          }
+        // CLOUD-FIRST: Create in Supabase with automatic user_id validation
+        if (AuthService().isLoggedIn) {
+          subjectId = await _cloudService.createSubject(newSubject);
+          print('✅ Subject created in cloud with ID: $subjectId');
+        } else {
+          // Fallback to local if offline
+          subjectId = await _db.insertSubject(newSubject);
+          print('✅ Subject created locally with ID: $subjectId');
         }
       } else {
         subjectId = subjects.id!;
@@ -485,10 +483,18 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
         updatedAt: DateTime.now(),
       );
       
-      await _db.updateSubject(updatedSubject);
+      // CLOUD-FIRST: Update in Supabase with automatic user_id validation
+      if (AuthService().isLoggedIn) {
+        await _cloudService.updateSubject(updatedSubject);
+        print('📊 Subject accuracy updated in cloud: ${subject.name}');
+      } else {
+        // Fallback to local if offline
+        await _db.updateSubject(updatedSubject);
+        print('📊 Subject accuracy updated locally: ${subject.name}');
+      }
       
       final newAccuracy = (newCorrectAnswers / newTotalQuestions) * 100;
-      print('📊 Subject accuracy updated: ${subject.name} -> ${newAccuracy.toStringAsFixed(1)}%');
+      print('   -> ${newAccuracy.toStringAsFixed(1)}% accuracy');
     } catch (e) {
       print('⚠️ Error updating subject accuracy: $e');
     }

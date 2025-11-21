@@ -141,3 +141,11 @@ temp/
 # Documentation builds
 docs/_build/
 site/
+
+# Documentation files (exclude from repo)
+*.md
+!README.md
+
+# AI/ML folders
+AI/
+ai/

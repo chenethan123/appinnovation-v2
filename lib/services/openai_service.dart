@@ -30,6 +30,7 @@ class OpenAIService {
     required int subjectId,
     int choices = 4,
     int maxRetries = 3,
+    String difficulty = 'medium',
   }) async {
     if (!_initialized) {
       print('❌ OpenAI not initialized. Call OpenAIService.initialize() first.');

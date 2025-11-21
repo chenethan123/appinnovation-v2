@@ -36,6 +36,8 @@ class OpenAIServiceNovel {
       throw Exception('OpenAI not initialized');
     }
     
+    print('📝 [OpenAIServiceNovel] Starting generation for subject: $subject, ID: $subjectId');
+    
     // Fetch recent stems and topics for novelty
     final recentStems = await _db.getRecentStems(subjectId, limit: 20);
     final recentTopics = await _db.getRecentTopics(subjectId, limit: 20);
@@ -44,11 +46,13 @@ class OpenAIServiceNovel {
     
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        print('🤖 Generating novel MCQ for: $subject (attempt $attempt/$maxRetries)');
+        print('🤖 [Attempt $attempt/$maxRetries] Generating novel MCQ for: $subject');
         
         // Build novelty contract prompt
         final systemPrompt = _buildNoveltyPrompt(choices, recentStems, recentTopics, subject, difficulty, unitContext);
         final userPrompt = _buildUserPrompt(subject, choices, recentTopics, attempt, difficulty, unitContext);
+        
+        print('📡 Calling OpenAI API (gpt-4o-mini)...');
         
         // Call OpenAI with novelty parameters
         final chat = await OpenAI.instance.chat.create(
@@ -70,8 +74,14 @@ class OpenAIServiceNovel {
           maxTokens: 1200,
         );
 
+        print('✅ OpenAI API response received');
+        
         final responseText = chat.choices.first.message.content?.first.text ?? '';
+        print('📄 Response length: ${responseText.length} chars');
+        
         final cleanJson = _cleanJsonResponse(responseText);
+        print('🧹 Cleaned JSON, parsing...');
+        
         final data = jsonDecode(cleanJson) as Map<String, dynamic>;
         
         // Generate unique ID
@@ -103,15 +113,21 @@ class OpenAIServiceNovel {
         print('✅ Novel MCQ generated and saved (hash: ${stemHash.substring(0, 8)}...)');
         return mcq;
         
-      } catch (error) {
-        print('⚠️ Attempt $attempt failed: $error');
+      } catch (error, stackTrace) {
+        print('❌ [Attempt $attempt FAILED]');
+        print('Error: $error');
+        print('Type: ${error.runtimeType}');
+        if (error.toString().length < 500) {
+          print('Stack trace: $stackTrace');
+        }
         
         if (attempt < maxRetries) {
+          print('⏳ Waiting ${2 * attempt}s before retry...');
           await Future.delayed(Duration(seconds: 2 * attempt));
           continue;
         }
         
-        print('❌ All attempts failed - returning fallback');
+        print('❌ All $maxRetries attempts failed - returning fallback');
         return _generateFallbackMCQ(subject, choices);
       }
     }

@@ -156,7 +156,7 @@ class _QuizTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Select a subject for a fresh ChatGPT-generated question',
+                  'Select a subject for a fresh AI-generated question',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

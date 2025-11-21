@@ -114,7 +114,7 @@ class QuickQuizCard extends ConsumerWidget {
                         }
                       },
                       icon: const Icon(Icons.auto_awesome),
-                      label: const Text('AI Quiz (ChatGPT)'),
+                      label: const Text('AI Quiz'),
                     ),
                   ),
                   const SizedBox(height: 12),

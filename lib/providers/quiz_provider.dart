@@ -4,6 +4,8 @@ import '../models/quiz_session.dart';
 import '../models/subject.dart';
 import '../database/database_helper.dart';
 import '../database/question_database.dart';
+import '../services/cloud_data_service.dart';
+import '../services/auth_service.dart';
 import '../services/ai_service.dart';
 import '../services/enhanced_question_service.dart';
 import '../data/question_bank.dart';
@@ -63,12 +65,14 @@ class QuizState {
 }
 
 class QuizNotifier extends StateNotifier<QuizState> {
-  QuizNotifier() : super(QuizState());
+  QuizNotifier(this._aiService, this._questionService) : super(QuizState());
+
+  final CloudDataService _cloudService = CloudDataService();
 
   final DatabaseHelper _db = DatabaseHelper();
   final QuestionDatabase _questionDb = QuestionDatabase();
-  final AIService _aiService = AIService();
-  final EnhancedQuestionService _enhancedQuestionService = EnhancedQuestionService();
+  final AIService _aiService;
+  final EnhancedQuestionService _questionService;
 
   Future<void> startQuiz({Subject? specificSubject}) async {
     try {
@@ -331,12 +335,26 @@ class QuizNotifier extends StateNotifier<QuizState> {
         );
       }
       
-      // Update subject statistics
-      await _db.updateSubjectStats(
-        currentSubject.id!,
-        newQuestionsAnswered,
-        newCorrectAnswers,
+      // Update subject statistics using cloud-first approach
+      final updatedSubject = currentSubject.copyWith(
+        totalQuestions: newQuestionsAnswered,
+        correctAnswers: newCorrectAnswers,
+        updatedAt: DateTime.now(),
       );
+      
+      // CLOUD-FIRST: Update in Supabase with automatic user_id validation
+      if (AuthService().isLoggedIn) {
+        await _cloudService.updateSubject(updatedSubject);
+        print('📊 Subject stats updated in cloud');
+      } else {
+        // Fallback to local if offline
+        await _db.updateSubjectStats(
+          currentSubject.id!,
+          newQuestionsAnswered,
+          newCorrectAnswers,
+        );
+        print('📊 Subject stats updated locally');
+      }
       
       state = state.copyWith(
         questionsAnswered: newQuestionsAnswered,
@@ -370,7 +388,9 @@ class QuizNotifier extends StateNotifier<QuizState> {
 }
 
 final quizProvider = StateNotifierProvider<QuizNotifier, QuizState>((ref) {
-  return QuizNotifier();
+  final aiService = AIService();
+  final questionService = EnhancedQuestionService();
+  return QuizNotifier(aiService, questionService);
 });
 
 // Provider for quiz settings
