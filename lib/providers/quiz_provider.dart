@@ -336,9 +336,10 @@ class QuizNotifier extends StateNotifier<QuizState> {
       }
       
       // Update subject statistics using cloud-first approach
+      // FIX: Add to existing stats instead of overwriting with session count
       final updatedSubject = currentSubject.copyWith(
-        totalQuestions: newQuestionsAnswered,
-        correctAnswers: newCorrectAnswers,
+        totalQuestions: currentSubject.totalQuestions + 1,
+        correctAnswers: currentSubject.correctAnswers + (isCorrect ? 1 : 0),
         updatedAt: DateTime.now(),
       );
       
