@@ -505,8 +505,8 @@ class DatabaseHelper {
     final db = await database;
     final result = await db.insert('quiz_sessions', session.toMap());
     
-    // Update subject statistics
-    await _updateSubjectStats(session.subjectId);
+    // NOTE: Do NOT update subject stats here - the provider handles it
+    // to avoid double-counting (once by counting DB rows, once by incrementing)
     
     return result;
   }

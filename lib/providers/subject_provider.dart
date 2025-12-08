@@ -13,6 +13,7 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
 
   Future<void> loadSubjects() async {
     try {
+      print('🔄 LOAD SUBJECTS CALLED - Fetching from cloud...');
       state = const AsyncValue.loading();
       
       // Wait for auth to be ready (max 3 seconds)
@@ -27,6 +28,9 @@ class SubjectNotifier extends StateNotifier<AsyncValue<List<Subject>>> {
       state = AsyncValue.data(subjects);
       
       print('📊 Loaded ${subjects.length} subjects for user ${_authService.userId?.substring(0, 8) ?? "unknown"}');
+      for (var subject in subjects) {
+        print('   - ${subject.name}: TOTAL=${subject.totalQuestions}, CORRECT=${subject.correctAnswers} (${((subject.correctAnswers / (subject.totalQuestions > 0 ? subject.totalQuestions : 1)) * 100).toStringAsFixed(1)}%)');
+      }
     } catch (error, stackTrace) {
       print('❌ Error loading subjects: $error');
       state = AsyncValue.error(error, stackTrace);

@@ -101,8 +101,8 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
     }
   }
 
-  /// Generate multiple MCQs for a specific subject (generates 3-5 questions at once)
-  Future<void> generateMCQ(String subject, {String? difficulty, int questionCount = 3}) async {
+  /// Generate multiple MCQs for a specific subject (generates 4 questions at once)
+  Future<void> generateMCQ(String subject, {String? difficulty, int questionCount = 4}) async {
     state = state.copyWith(
       isLoading: true, 
       clearError: true, 
@@ -136,6 +136,7 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
+        print('🆕 Creating subject with stats: 0/0');
         
         // CLOUD-FIRST: Create in Supabase with automatic user_id validation
         if (AuthService().isLoggedIn) {
@@ -146,8 +147,13 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
           subjectId = await _db.insertSubject(newSubject);
           print('✅ Subject created locally with ID: $subjectId');
         }
+        
+        // Verify it was created with 0/0
+        final createdSubject = await _db.getSubjectById(subjectId);
+        print('✅ Verified created subject - TOTAL=${createdSubject?.totalQuestions}, CORRECT=${createdSubject?.correctAnswers}');
       } else {
         subjectId = subjects.id!;
+        print('📋 Using existing subject ID: $subjectId - TOTAL=${subjects.totalQuestions}, CORRECT=${subjects.correctAnswers}');
       }
       
       _currentSubjectId = subjectId; // Track for logging
@@ -368,6 +374,8 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
     final mcq = state.currentMCQ!;
     final isCorrect = mcq.isCorrect(answer);
 
+    print('🔘 SUBMIT ANSWER CALLED: ${mcq.subject} - Answer: $answer, Correct: $isCorrect');
+
     state = state.copyWith(
       userAnswer: answer,
       isAnswered: true,
@@ -472,9 +480,13 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
       final subject = await _db.getSubjectById(subjectId);
       if (subject == null) return;
       
+      print('🔢 BEFORE INCREMENT: ${subject.name} - TOTAL=${subject.totalQuestions}, CORRECT=${subject.correctAnswers}');
+      
       // Increment counters
       final newTotalQuestions = subject.totalQuestions + 1;
       final newCorrectAnswers = subject.correctAnswers + (isCorrect ? 1 : 0);
+      
+      print('🔢 AFTER INCREMENT: ${subject.name} - TOTAL=$newTotalQuestions, CORRECT=$newCorrectAnswers (isCorrect: $isCorrect)');
       
       // Update subject with new counts
       final updatedSubject = subject.copyWith(
@@ -486,11 +498,11 @@ class MCQQuizNotifier extends StateNotifier<MCQQuizState> {
       // CLOUD-FIRST: Update in Supabase with automatic user_id validation
       if (AuthService().isLoggedIn) {
         await _cloudService.updateSubject(updatedSubject);
-        print('📊 Subject accuracy updated in cloud: ${subject.name}');
+        print('☁️ SENT TO CLOUD: ${subject.name} - TOTAL=$newTotalQuestions, CORRECT=$newCorrectAnswers');
       } else {
         // Fallback to local if offline
         await _db.updateSubject(updatedSubject);
-        print('📊 Subject accuracy updated locally: ${subject.name}');
+        print('💾 SAVED LOCALLY: ${subject.name} - TOTAL=$newTotalQuestions, CORRECT=$newCorrectAnswers');
       }
       
       final newAccuracy = (newCorrectAnswers / newTotalQuestions) * 100;
