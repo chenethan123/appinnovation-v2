@@ -13,6 +13,8 @@ class Question {
   final bool isFromAI;
   final String? sourceUrl; // Optional reference URL
   final String? source; // Source name (e.g., "Khan Academy", "Project Euler")
+  final String? classNoteId; // Links to class_notes table if generated from uploaded notes
+  final String sourceType; // 'ai_generated', 'class_notes', 'imported', 'manual'
 
   Question({
     this.id,
@@ -29,6 +31,8 @@ class Question {
     this.isFromAI = true,
     this.sourceUrl,
     this.source,
+    this.classNoteId,
+    this.sourceType = 'ai_generated',
   });
 
   Question copyWith({
@@ -46,6 +50,8 @@ class Question {
     bool? isFromAI,
     String? sourceUrl,
     String? source,
+    String? classNoteId,
+    String? sourceType,
   }) {
     return Question(
       id: id ?? this.id,
@@ -62,6 +68,8 @@ class Question {
       isFromAI: isFromAI ?? this.isFromAI,
       sourceUrl: sourceUrl ?? this.sourceUrl,
       source: source ?? this.source,
+      classNoteId: classNoteId ?? this.classNoteId,
+      sourceType: sourceType ?? this.sourceType,
     );
   }
 
@@ -81,6 +89,8 @@ class Question {
       'is_from_ai': isFromAI ? 1 : 0,
       'source_url': sourceUrl,
       'source': source,
+      'class_note_id': classNoteId,
+      'source_type': sourceType,
     };
   }
 
@@ -100,6 +110,8 @@ class Question {
       isFromAI: (map['is_from_ai'] ?? 1) == 1,
       sourceUrl: map['source_url'],
       source: map['source'],
+      classNoteId: map['class_note_id'],
+      sourceType: map['source_type'] ?? 'ai_generated',
     );
   }
 
