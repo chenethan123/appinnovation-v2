@@ -145,7 +145,11 @@ site/
 # Documentation files (exclude from repo)
 *.md
 !README.md
+!BUILD_VERIFICATION.md
 
 # AI/ML folders
 AI/
 ai/
+
+# Client directory (generated/build artifacts)
+client/
